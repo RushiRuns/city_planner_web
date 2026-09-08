@@ -1,0 +1,585 @@
+/* ============================================================
+   CITY PLANNER — UI COMPONENTS
+   Role-Adaptive Interface Components
+   ============================================================ */
+
+/* ── 1. Agency HUD Command Banner ────────────────────────────── */
+.agency-hud-banner {
+    position: relative;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-xl);
+    padding: 16px 20px;
+    margin-bottom: var(--space-6);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    transition: background var(--transition-base), border-color var(--transition-base);
+}
+
+[data-theme="dark"] .agency-hud-banner {
+    background: var(--bg-surface);
+}
+
+.agency-hud-banner::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--agency-badge-bg, var(--brand-secondary));
+}
+
+.agency-hud-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+}
+
+.agency-hud-emblem {
+    width: 42px;
+    height: 42px;
+    border-radius: var(--radius-lg);
+    background: var(--agency-badge-bg, var(--brand-secondary));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+}
+
+.agency-hud-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.agency-hud-title {
+    font-size: var(--font-size-base);
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.01em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.agency-hud-callsign {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    background: var(--bg-surface-2);
+    border: 1px solid var(--border-medium);
+    color: var(--agency-accent, var(--brand-accent));
+    padding: 2px 8px;
+    border-radius: 6px;
+    letter-spacing: 0.08em;
+}
+
+.agency-hud-slogan {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.agency-hud-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+/* ── 2. Condition & Status Chips ─────────────────────────────── */
+.condition-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 700;
+    font-family: var(--font-mono);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    background: rgba(34, 197, 94, 0.12);
+    border: 1px solid rgba(34, 197, 94, 0.35);
+    color: #16A34A;
+}
+
+[data-theme="dark"] .condition-chip {
+    color: #4ADE80;
+}
+
+.condition-chip.amber {
+    background: rgba(245, 158, 11, 0.12);
+    border-color: rgba(245, 158, 11, 0.35);
+    color: #D97706;
+}
+
+[data-theme="dark"] .condition-chip.amber {
+    color: #FBBF24;
+}
+
+.condition-chip.red {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.4);
+    color: #DC2626;
+    animation: flashAlert 1.5s infinite;
+}
+
+[data-theme="dark"] .condition-chip.red {
+    color: #F87171;
+}
+
+@keyframes flashAlert {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+/* ── 3. Audio Telemetry Button ───────────────────────────────── */
+.audio-telemetry-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 14px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 600;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-medium);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.audio-telemetry-btn:hover {
+    border-color: var(--brand-secondary);
+    color: var(--text-primary);
+}
+
+.audio-telemetry-btn.active {
+    background: rgba(37, 99, 235, 0.1);
+    border-color: var(--brand-secondary);
+    color: var(--brand-primary);
+}
+
+[data-theme="dark"] .audio-telemetry-btn.active {
+    background: rgba(59, 130, 246, 0.18);
+    color: var(--brand-accent);
+}
+
+.sound-wave {
+    display: inline-flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 14px;
+}
+
+.sound-wave-bar {
+    width: 2px;
+    height: 100%;
+    background: currentColor;
+    border-radius: 2px;
+    transition: height 0.2s;
+}
+
+.audio-telemetry-btn.active .sound-wave-bar:nth-child(1) { animation: wave 0.8s ease-in-out infinite alternate; }
+.audio-telemetry-btn.active .sound-wave-bar:nth-child(2) { animation: wave 0.6s ease-in-out 0.2s infinite alternate; }
+.audio-telemetry-btn.active .sound-wave-bar:nth-child(3) { animation: wave 0.9s ease-in-out 0.4s infinite alternate; }
+
+@keyframes wave {
+    0% { height: 25%; }
+    100% { height: 100%; }
+}
+
+/* ── 4. Agency Lens Selector (Top Nav & Header) ──────────────── */
+.agency-lens-wrapper {
+    position: relative;
+}
+
+.agency-lens-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    border-radius: 100px;
+    background: rgba(15, 23, 42, 0.7);
+    border: 1px solid var(--border-medium);
+    color: var(--text-primary);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.agency-lens-btn:hover {
+    border-color: var(--brand-secondary);
+    box-shadow: 0 0 12px var(--brand-glow);
+}
+
+.agency-lens-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 260px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-medium);
+    border-radius: var(--radius-xl);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
+    padding: 8px;
+    z-index: 1000;
+    display: none;
+    backdrop-filter: blur(20px);
+}
+
+.agency-lens-dropdown.show {
+    display: block;
+    animation: dropdownFadeIn 0.2s ease;
+}
+
+@keyframes dropdownFadeIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.agency-lens-header {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 6px 10px;
+}
+
+.agency-lens-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    text-decoration: none;
+}
+
+.agency-lens-item:hover {
+    background: var(--bg-sidebar-hover);
+    color: var(--brand-accent);
+}
+
+.agency-lens-item.active {
+    background: var(--bg-sidebar-active);
+    color: #fff;
+    font-weight: 700;
+}
+
+.agency-lens-badge {
+    font-size: 16px;
+}
+
+/* stat-card-modern removed — use standard .stat-card instead */
+
+/* ── 6. Live Tactical Incident Item ──────────────────────────── */
+.incident-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border-light);
+    transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.incident-row:hover {
+    background: var(--bg-sidebar-hover);
+}
+
+.incident-row:last-child {
+    border-bottom: none;
+}
+
+.incident-badge-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.incident-meta {
+    flex: 1;
+    min-width: 0;
+}
+
+.incident-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.incident-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+    display: flex;
+    gap: 8px;
+    margin-top: 2px;
+}
+
+.incident-action-btn {
+    padding: 6px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 8px;
+    border: 1px solid var(--border-medium);
+    background: var(--bg-surface-2);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.incident-action-btn:hover {
+    background: var(--brand-primary);
+    color: #fff;
+    border-color: var(--brand-secondary);
+}
+
+/* emergency-strobe-alert removed — unused */
+
+.pulse-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.avatar-circle {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--brand-secondary);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+}
+
+.metric-pill {
+    padding: 4px 12px;
+    border-radius: var(--radius-full);
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.kanban-board {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: var(--space-4);
+}
+
+.kanban-column {
+    background: var(--bg-surface-2);
+    border-radius: var(--radius-xl);
+    padding: var(--space-4);
+    border: 1px solid var(--border-light);
+}
+
+/* ── 8. Universal Back Navigation Buttons ──────────────────────── */
+.header-back-btn {
+    margin-right: var(--space-1);
+    font-size: 16px;
+}
+.header-back-btn:hover {
+    color: var(--brand-primary);
+    border-color: var(--brand-secondary);
+}
+
+.page-back-wrapper {
+    display: inline-flex;
+    margin-bottom: var(--space-2);
+}
+
+.btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 14px;
+    font-size: var(--font-size-xs);
+    font-weight: 700;
+    color: var(--text-secondary);
+    background: var(--bg-surface-2);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    line-height: 1.4;
+}
+.btn-back:hover {
+    color: var(--text-primary);
+    background: var(--bg-surface-3);
+    border-color: var(--border-medium);
+    transform: translateX(-3px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+.btn-back i {
+    font-size: 14px;
+    transition: transform var(--transition-fast);
+}
+.btn-back:hover i {
+    transform: translateX(-2px);
+}
+
+/* ── 9. Settings Theme & Appearance UI ─────────────────────────── */
+.theme-selection-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    margin-top: 12px;
+}
+
+.theme-card {
+    border: 2px solid var(--border-light);
+    background: var(--bg-surface-2);
+    border-radius: var(--radius-xl);
+    padding: 16px;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    position: relative;
+    user-select: none;
+}
+
+.theme-card:hover {
+    border-color: var(--brand-secondary);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.theme-card.active {
+    border-color: var(--brand-primary);
+    background: var(--bg-surface);
+    box-shadow: 0 0 0 1px var(--brand-primary), 0 8px 25px rgba(59, 130, 246, 0.18);
+}
+
+.theme-card-preview {
+    height: 90px;
+    border-radius: var(--radius-lg);
+    margin-bottom: 12px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid var(--border-light);
+}
+
+.theme-preview-dark {
+    background: #0B0F19;
+    color: #F8FAFC;
+}
+.theme-preview-dark .tp-bar { background: #1E293B; }
+.theme-preview-dark .tp-accent { background: #3B82F6; }
+.theme-preview-dark .tp-line { background: #334155; }
+
+.theme-preview-light {
+    background: #F8FAFC;
+    color: #0F172A;
+}
+.theme-preview-light .tp-bar { background: #E2E8F0; }
+.theme-preview-light .tp-accent { background: #2563EB; }
+.theme-preview-light .tp-line { background: #CBD5E1; }
+
+.tp-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 14px;
+}
+.tp-badge {
+    width: 32px;
+    height: 8px;
+    border-radius: 4px;
+}
+.tp-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
+.tp-body {
+    display: flex;
+    gap: 8px;
+    flex: 1;
+}
+.tp-side {
+    width: 22px;
+    border-radius: 4px;
+    height: 100%;
+}
+.tp-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.tp-card-mock {
+    height: 16px;
+    border-radius: 4px;
+}
+
+.theme-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 4px;
+}
+
+.theme-card-title {
+    font-size: var(--font-size-sm);
+    font-weight: 700;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.theme-card-check {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid var(--border-medium);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: transparent;
+    transition: all var(--transition-fast);
+}
+
+.theme-card.active .theme-card-check {
+    background: var(--brand-primary);
+    border-color: var(--brand-primary);
+    color: #ffffff;
+}
+
+.theme-card-desc {
+    font-size: var(--font-size-xs);
+    color: var(--text-muted);
+    line-height: 1.4;
+}
+
+

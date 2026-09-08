@@ -1,0 +1,214 @@
+/* ============================================================
+   CITY PLANNER — PAGE-SPECIFIC CSS
+   ============================================================ */
+
+/* Request Detail */
+.incident-header-badge {
+    font-size: 14px;
+    padding: 6px 14px;
+}
+
+/* Timeline */
+.timeline-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    position: absolute;
+    left: -27px;
+    top: 3px;
+}
+
+/* Map page */
+.leaflet-popup-content-wrapper {
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xl);
+    padding: 4px;
+}
+.leaflet-popup-content {
+    margin: 12px 14px;
+    line-height: 1.4;
+}
+[data-theme="dark"] .leaflet-popup-content-wrapper,
+[data-theme="dark"] .leaflet-popup-tip {
+    background: #0F172A;
+    color: #F1F5F9;
+}
+
+/* ── Service Station Map Marker ──────────────────────────────── */
+.station-marker-wrapper {
+    background: none !important;
+    border: none !important;
+}
+
+.station-map-marker {
+    position: relative;
+    width: 36px;
+    height: 42px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.station-map-marker:hover {
+    transform: translateY(-5px) scale(1.12);
+    z-index: 1000 !important;
+}
+
+.station-map-marker-pin {
+    width: 34px;
+    height: 34px;
+    background: var(--stn-color, #6366F1);
+    border: 2.5px solid #FFFFFF;
+    border-radius: 50% 50% 50% 0;
+    transform: rotate(-45deg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25), 0 0 0 2px var(--stn-color, #6366F1)33;
+    transition: all 0.2s ease;
+}
+
+.station-map-marker-pin i {
+    transform: rotate(45deg);
+    color: #FFFFFF;
+    font-size: 14px;
+    margin-top: 1px;
+    margin-left: 1px;
+}
+
+.station-map-marker-shadow {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 14px;
+    height: 4px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 50%;
+    filter: blur(1.5px);
+}
+
+/* ── Station Map Container & Toolbar ────────────────────────── */
+.station-map-card {
+    margin-bottom: var(--space-6);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-xl);
+    background: var(--bg-surface);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+
+.station-map-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    background: var(--bg-surface);
+    border-bottom: 1px solid var(--border-light);
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.station-map-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.station-search-box {
+    position: relative;
+    min-width: 220px;
+}
+
+.station-search-box i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    font-size: 13px;
+    pointer-events: none;
+}
+
+.station-search-input {
+    width: 100%;
+    padding: 7px 12px 7px 34px;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-medium);
+    background: var(--bg-surface-2);
+    color: var(--text-primary);
+    font-size: var(--font-size-xs);
+    font-family: inherit;
+    transition: all var(--transition-fast);
+}
+
+.station-search-input:focus {
+    outline: none;
+    border-color: var(--brand-secondary);
+    box-shadow: 0 0 0 3px var(--brand-glow);
+    background: var(--bg-surface);
+}
+
+.station-map-wrapper {
+    height: 420px;
+    width: 100%;
+    position: relative;
+}
+
+#stationMap {
+    height: 100%;
+    width: 100%;
+}
+
+/* Map Toggle Button */
+.btn-map-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    border: 1px solid var(--border-medium);
+    background: var(--bg-surface-2);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.btn-map-toggle:hover {
+    color: var(--text-primary);
+    border-color: var(--brand-secondary);
+}
+
+.btn-map-toggle.active {
+    background: rgba(99, 102, 241, 0.12);
+    border-color: var(--brand-primary);
+    color: var(--brand-primary);
+}
+
+[data-theme="dark"] .btn-map-toggle.active {
+    background: rgba(99, 102, 241, 0.22);
+    color: #818CF8;
+}
+
+@media (max-width: 768px) {
+    .station-map-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .station-map-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .station-search-box {
+        min-width: 100%;
+    }
+    .station-map-wrapper {
+        height: 320px;
+    }
+}
+
