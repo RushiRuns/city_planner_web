@@ -212,3 +212,83 @@
     }
 }
 
+
+
+/* ── Dashboard Table Styling (Requests Table) ──────────────────── */
+/* Remove thick column borders, use only horizontal dividers */
+.table tbody td {
+    border-left: none;
+    border-right: none;
+    border-top: none;
+    border-bottom: 1px solid var(--border-light);
+    padding: 14px 16px;
+}
+
+.table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Alternating row backgrounds */
+[data-theme="dark"] .table tbody tr:nth-child(even) {
+    background: rgba(255,255,255,0.02);
+}
+
+[data-theme="light"] .table tbody tr:nth-child(even) {
+    background: rgba(0,0,0,0.015);
+}
+
+/* Row hover state */
+.table tbody tr:hover {
+    background: var(--bg-elevated);
+}
+
+[data-theme="dark"] .table tbody tr:hover {
+    background: #1f1f1f;
+}
+
+[data-theme="light"] .table tbody tr:hover {
+    background: #f4f4f5;
+}
+
+/* Column headers - refined typography */
+.table thead th {
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    font-weight: 600;
+    background: transparent;
+    border-bottom: 1px solid var(--border-light);
+    padding: 12px 16px;
+}
+
+/* Remove row-critical and row-warning thick borders */
+.table tbody tr.row-critical td,
+.table tbody tr.row-warning td {
+    border-left: none;
+}
+
+/* Priority badge - EMERGENCY as outlined red */
+.table .badge-emergency {
+    background: transparent;
+    border: 1px solid var(--color-critical);
+    color: var(--color-critical);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 4px 12px;
+    border-radius: 100px;
+}
+
+/* Action buttons - bare icon style */
+.table tbody td .btn-icon {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    padding: 4px;
+    transition: color var(--transition-fast);
+}
+
+.table tbody td .btn-icon:hover {
+    color: var(--text-primary);
+}

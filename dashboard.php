@@ -78,7 +78,7 @@ require_once __DIR__ . '/includes/layout.php';
         <div class="stat-value" id="sc-active"><?= number_format($stats['active']) ?></div>
     </div>
 
-    <div class="stat-card" style="--card-accent:var(--color-critical);">
+    <div class="stat-card stat-card-critical" style="--card-accent:var(--color-critical);">
         <div class="stat-card-header">
             <span class="stat-label">Critical / Emergency</span>
             <div class="stat-icon" style="background:rgba(239,68,68,0.12);color:var(--color-critical);"><i class="bi bi-exclamation-triangle-fill"></i></div>
