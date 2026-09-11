@@ -107,8 +107,8 @@ require_once __DIR__ . '/includes/layout.php';
 <div class="grid gap-6 mb-6 dashboard-main-grid" id="mainGrid">
 
     <!-- Live Incident Map -->
-    <div class="card">
-        <div class="card-header">
+    <div class="card" style="display:flex;flex-direction:column;height:520px;">
+        <div class="card-header" style="flex-shrink:0;">
             <div class="card-title">
                 <i class="bi bi-map-fill" style="color:var(--brand-secondary);"></i>
                 Live Incident Map
@@ -123,13 +123,13 @@ require_once __DIR__ . '/includes/layout.php';
                 </a>
             </div>
         </div>
-        <div style="height:440px;border-radius:0 0 var(--radius-xl) var(--radius-xl);overflow:hidden;">
+        <div style="flex:1;border-radius:0 0 var(--radius-xl) var(--radius-xl);overflow:hidden;">
             <div id="dashMap" style="height:100%;width:100%;"></div>
         </div>
     </div>
 
     <!-- Live Incidents Panel -->
-    <div class="card" style="display:flex;flex-direction:column;">
+    <div class="card" style="display:flex;flex-direction:column;height:520px;">
         <div class="card-header" style="flex-shrink:0;">
             <div class="card-title">
                 <i class="bi bi-activity" style="color:var(--color-critical);"></i>
@@ -147,7 +147,7 @@ require_once __DIR__ . '/includes/layout.php';
                 <div class="text-muted text-sm mt-4">Loading incidents...</div>
             </div>
         </div>
-        <div class="card-footer" style="text-align:center;">
+        <div class="card-footer" style="flex-shrink:0;text-align:center;">
             <a href="<?= BASE_URL ?>requests.php" class="btn btn-surface btn-sm w-full">
                 View All Requests <i class="bi bi-arrow-right"></i>
             </a>
@@ -261,8 +261,6 @@ require_once __DIR__ . '/includes/layout.php';
     text-decoration: none; color: inherit;
 }
 .incident-item:hover { background: var(--bg-surface-2); border-color: var(--border-light); }
-.incident-item.critical { border-left: 3px solid var(--color-critical) !important; }
-.incident-item.high     { border-left: 3px solid var(--color-warning) !important; }
 .incident-icon {
     width: 36px; height: 36px; border-radius: var(--radius-md);
     display: flex; align-items: center; justify-content: center;
