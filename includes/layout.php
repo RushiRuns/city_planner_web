@@ -64,7 +64,7 @@ function renderNavItem(array $item, string $activePage, bool $collapsed = false)
     if (isset($item['badge']) && $item['badge'] > 0) {
         $badge = '<span class="nav-badge">' . min(99, $item['badge']) . '</span>';
     } elseif (!empty($item['pill'])) {
-        $badge = '<span class="nav-badge" style="background:rgba(99,102,241,0.25);color:#818cf8;border:1px solid rgba(99,102,241,0.4);font-size:9px;padding:2px 5px;letter-spacing:0.5px;font-weight:700;">' . htmlspecialchars($item['pill']) . '</span>';
+        $badge = '<span class="nav-badge nav-pill" style="background:rgba(99,102,241,0.25);color:#818cf8;border:1px solid rgba(99,102,241,0.4);font-size:9px;padding:2px 5px;letter-spacing:0.5px;font-weight:700;">' . htmlspecialchars($item['pill']) . '</span>';
     }
     return "<a href='$href' class='nav-item $active'><i class='bi $icon nav-icon'></i><span class='nav-label'>$label</span>$badge</a>";
 }
