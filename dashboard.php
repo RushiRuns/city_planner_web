@@ -46,28 +46,6 @@ $inlineScript = "const ADMIN_CATEGORIES = " . json_encode($admin['categories']) 
 require_once __DIR__ . '/includes/layout.php';
 ?>
 
-<!-- ── Agency HUD Banner ─────────────────────────────────────── -->
-<div class="agency-hud-banner">
-    <div class="agency-hud-left">
-        <div class="agency-hud-emblem">
-            <span><?= $agencyProfile['badge'] ?></span>
-        </div>
-        <div class="agency-hud-info">
-            <div class="agency-hud-title">
-                <span><?= htmlspecialchars($agencyProfile['name']) ?></span>
-                <span class="agency-hud-callsign"><?= htmlspecialchars($agencyProfile['callsign']) ?></span>
-            </div>
-            <div class="agency-hud-slogan"><?= htmlspecialchars($agencyProfile['slogan']) ?></div>
-        </div>
-    </div>
-    <div class="agency-hud-right">
-        <span class="condition-chip <?= (int)$stats['critical'] > 0 ? 'red' : 'green' ?>">
-            <span class="dot <?= (int)$stats['critical'] > 0 ? 'dot-critical' : 'dot-success' ?> dot-pulse"></span>
-            <?= (int)$stats['critical'] > 0 ? 'Critical Alerts Active' : 'All Systems Normal' ?>
-        </span>
-    </div>
-</div>
-
 <!-- ── Stat Cards ──────────────────────────────────────────── -->
 <div class="grid grid-cols-stat gap-4 mb-6" id="statCards">
     <div class="stat-card" style="--card-accent:var(--brand-secondary);">
@@ -187,11 +165,6 @@ require_once __DIR__ . '/includes/layout.php';
         </div>
         <div class="card-body" style="padding-top:var(--space-4);">
             <canvas id="trendChart" height="200"></canvas>
-        </div>
-    </div>
-</div>
-
-            </div>
         </div>
     </div>
 </div>

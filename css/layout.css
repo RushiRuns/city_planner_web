@@ -306,8 +306,8 @@
     position: sticky;
     top: 0;
     height: var(--header-height);
-    background: var(--bg-surface);
-    border-bottom: 1px solid var(--border-light);
+    background: var(--bg-base);
+    border-bottom: none;
     display: flex;
     align-items: center;
     padding: 0 20px;
@@ -319,13 +319,13 @@
 }
 
 [data-theme="dark"] .top-header {
-    background: #111111;
-    border-bottom: 1px solid #1f1f1f;
+    background: var(--bg-base);
+    border-bottom: none;
 }
 
 [data-theme="light"] .top-header {
-    background: #ffffff;
-    border-bottom: 1px solid #e4e4e7;
+    background: var(--bg-base);
+    border-bottom: none;
 }
 
 .header-breadcrumb {
