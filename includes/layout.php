@@ -123,14 +123,18 @@ function renderNavItem(array $item, string $activePage, bool $collapsed = false)
 <!-- ── Sidebar ──────────────────────────────────────────────── -->
 <aside class="sidebar" id="sidebar">
 
-    <!-- Brand -->
-    <a href="<?= BASE_URL ?>dashboard.php" class="sidebar-brand">
-        <div class="sidebar-logo">🏙️</div>
-        <div class="sidebar-brand-text">
-            <div class="sidebar-brand-title">City Planner</div>
-            <div class="sidebar-brand-sub"><?= htmlspecialchars($agencyProfile['callsign']) ?></div>
-        </div>
-    </a>
+    <!-- Brand & Toggle Header -->
+    <div class="sidebar-header">
+        <a href="<?= BASE_URL ?>dashboard.php" class="sidebar-brand">
+            <div class="sidebar-logo">🏙️</div>
+            <div class="sidebar-brand-text">
+                <div class="sidebar-brand-title">City Planner</div>
+            </div>
+        </a>
+        <button class="sidebar-toggle-btn" id="sidebarToggle" title="Collapse sidebar">
+            <i class="bi bi-layout-sidebar-reverse" id="sidebarToggleIcon"></i>
+        </button>
+    </div>
 
     <!-- Navigation -->
     <nav class="sidebar-nav">
@@ -184,12 +188,7 @@ function renderNavItem(array $item, string $activePage, bool $collapsed = false)
         </a>
     </div>
 
-    <!-- Collapse Toggle -->
-    <div class="sidebar-toggle">
-        <button class="sidebar-toggle-btn" id="sidebarToggle" title="Collapse sidebar">
-            <i class="bi bi-layout-sidebar-reverse" id="sidebarToggleIcon"></i>
-        </button>
-    </div>
+
 </aside>
 
 <!-- ── Main Content ──────────────────────────────────────────── -->
@@ -204,10 +203,6 @@ function renderNavItem(array $item, string $activePage, bool $collapsed = false)
 
         <!-- Right Actions -->
         <div class="header-actions">
-            <!-- Theme Mode Toggle (Dark / Light) -->
-            <button class="header-action-btn" id="themeToggle" title="Toggle Dark / Light Mode">
-                <i class="bi bi-moon-fill" id="themeIcon"></i>
-            </button>
 
             <!-- Notifications -->
             <a href="<?= BASE_URL ?>notifications.php" class="header-action-btn" title="Notifications">

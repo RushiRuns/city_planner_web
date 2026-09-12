@@ -46,6 +46,14 @@ $inlineScript = "const ADMIN_CATEGORIES = " . json_encode($admin['categories']) 
 require_once __DIR__ . '/includes/layout.php';
 ?>
 
+<!-- ── Page Header ──────────────────────────────────────────── -->
+<div class="page-header">
+    <div>
+        <h1 class="page-title"><i class="bi bi-grid-fill" style="opacity:0.6;color:var(--brand-secondary);"></i> Command Dashboard</h1>
+        <p class="page-subtitle">Real-time overview of city operations, incidents, and units</p>
+    </div>
+</div>
+
 <!-- ── Stat Cards ──────────────────────────────────────────── -->
 <div class="grid grid-cols-stat gap-4 mb-6" id="statCards">
     <div class="stat-card" style="--card-accent:var(--brand-secondary);">
