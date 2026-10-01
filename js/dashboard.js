@@ -169,10 +169,10 @@ const Dashboard = {
         }
 
         const typeStyles = {
-            critical: { bg: 'var(--color-critical-bg)', border: 'var(--color-critical-border)', icon: 'var(--color-critical)', text: '#991B1B' },
-            warning:  { bg: 'var(--color-warning-bg)',  border: 'var(--color-warning-border)',  icon: 'var(--color-warning)',  text: '#92400E' },
-            info:     { bg: 'var(--color-info-bg)',     border: 'var(--color-info-border)',     icon: 'var(--color-info)',     text: '#1E40AF' },
-            success:  { bg: 'var(--color-success-bg)',  border: 'var(--color-success-border)',  icon: 'var(--color-success)',  text: '#14532D' },
+            critical: { bg: 'var(--color-critical-bg)', border: 'var(--color-critical-border)', icon: 'var(--color-critical)', text: 'var(--text-primary)' },
+            warning:  { bg: 'var(--color-warning-bg)',  border: 'var(--color-warning-border)',  icon: 'var(--color-warning)',  text: 'var(--text-primary)' },
+            info:     { bg: 'var(--color-info-bg)',     border: 'var(--color-info-border)',     icon: 'var(--color-info)',     text: 'var(--text-primary)' },
+            success:  { bg: 'var(--color-success-bg)',  border: 'var(--color-success-border)',  icon: 'var(--color-success)',  text: 'var(--text-primary)' },
         };
 
         container.innerHTML = insights.map(ins => {
@@ -231,9 +231,19 @@ const Dashboard = {
         const canvas = document.getElementById('trendChart');
         if (!canvas) return;
 
+        const getVar = (name, fallback) => {
+            if (typeof window !== 'undefined' && window.getComputedStyle) {
+                const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+                if (v) return v;
+            }
+            return fallback;
+        };
+
         const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
         const gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)';
-        const textColor = isDark ? '#64748B' : '#94A3B8';
+        const textColor = getVar('--text-secondary', isDark ? '#64748B' : '#94A3B8');
+        const primaryColor = getVar('--brand-secondary', '#3B82F6');
+        const successColor = getVar('--color-success', '#22C55E');
 
         this.trendChart = new Chart(canvas, {
             type: 'bar',
@@ -244,7 +254,7 @@ const Dashboard = {
                         label: 'Total Requests',
                         data: [],
                         backgroundColor: 'rgba(59,130,246,0.3)',
-                        borderColor: '#3B82F6',
+                        borderColor: primaryColor,
                         borderWidth: 2,
                         borderRadius: 4,
                     },
@@ -252,7 +262,7 @@ const Dashboard = {
                         label: 'Resolved',
                         data: [],
                         backgroundColor: 'rgba(34,197,94,0.4)',
-                        borderColor: '#22C55E',
+                        borderColor: successColor,
                         borderWidth: 2,
                         borderRadius: 4,
                         type: 'line',
@@ -270,10 +280,10 @@ const Dashboard = {
                         labels: { color: textColor, font: { family: 'Inter', size: 11 } },
                     },
                     tooltip: {
-                        backgroundColor: isDark ? '#1E293B' : '#fff',
-                        titleColor: isDark ? '#F1F5F9' : '#0F172A',
+                        backgroundColor: getVar('--bg-surface', isDark ? '#1E293B' : '#fff'),
+                        titleColor: getVar('--text-primary', isDark ? '#F1F5F9' : '#0F172A'),
                         bodyColor: textColor,
-                        borderColor: isDark ? 'rgba(255,255,255,0.1)' : '#E2E8F0',
+                        borderColor: getVar('--border-medium', isDark ? 'rgba(255,255,255,0.1)' : '#E2E8F0'),
                         borderWidth: 1,
                     },
                 },

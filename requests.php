@@ -34,23 +34,23 @@ require_once __DIR__ . '/includes/layout.php';
 <!-- ── Quick Stats Bar ───────────────────────────────────────── -->
 <div class="grid grid-cols-5 gap-3 mb-6" id="quickStats">
     <div class="stat-card critical" style="padding:var(--space-4);" onclick="Requests.filterByStatus('submitted')">
-        <div class="stat-icon" style="background:rgba(59,130,246,0.1);color:#3B82F6;width:40px;height:40px;font-size:16px;"><i class="bi bi-inbox"></i></div>
+        <div class="stat-icon stat-icon-primary"><i class="bi bi-inbox"></i></div>
         <div class="stat-content"><div class="stat-value" id="qs-submitted">—</div><div class="stat-label">Submitted</div></div>
     </div>
     <div class="stat-card warning" style="padding:var(--space-4);" onclick="Requests.filterByStatus('dispatched')">
-        <div class="stat-icon" style="background:rgba(147,51,234,0.1);color:#9333EA;width:40px;height:40px;font-size:16px;"><i class="bi bi-send-fill"></i></div>
+        <div class="stat-icon stat-icon-rescue"><i class="bi bi-send-fill"></i></div>
         <div class="stat-content"><div class="stat-value" id="qs-dispatched">—</div><div class="stat-label">Dispatched</div></div>
     </div>
     <div class="stat-card info" style="padding:var(--space-4);" onclick="Requests.filterByStatus('inProgress')">
-        <div class="stat-icon" style="background:rgba(234,88,12,0.1);color:#EA580C;width:40px;height:40px;font-size:16px;"><i class="bi bi-tools"></i></div>
+        <div class="stat-icon stat-icon-road"><i class="bi bi-tools"></i></div>
         <div class="stat-content"><div class="stat-value" id="qs-inprogress">—</div><div class="stat-label">In Progress</div></div>
     </div>
     <div class="stat-card success" style="padding:var(--space-4);" onclick="Requests.filterByStatus('resolved')">
-        <div class="stat-icon" style="background:rgba(34,197,94,0.1);color:#22C55E;width:40px;height:40px;font-size:16px;"><i class="bi bi-check-circle-fill"></i></div>
+        <div class="stat-icon stat-icon-success"><i class="bi bi-check-circle-fill"></i></div>
         <div class="stat-content"><div class="stat-value" id="qs-resolved">—</div><div class="stat-label">Resolved</div></div>
     </div>
     <div class="stat-card" style="--card-accent:var(--color-neutral);padding:var(--space-4);" onclick="Requests.filterByStatus('cancelled')">
-        <div class="stat-icon" style="background:rgba(148,163,184,0.1);color:#94A3B8;width:40px;height:40px;font-size:16px;"><i class="bi bi-x-circle-fill"></i></div>
+        <div class="stat-icon stat-icon-neutral"><i class="bi bi-x-circle-fill"></i></div>
         <div class="stat-content"><div class="stat-value" id="qs-cancelled">—</div><div class="stat-label">Cancelled</div></div>
     </div>
 </div>

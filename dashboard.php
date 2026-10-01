@@ -59,7 +59,7 @@ require_once __DIR__ . '/includes/layout.php';
     <div class="stat-card" style="--card-accent:var(--brand-secondary);">
         <div class="stat-card-header">
             <span class="stat-label">Active <?= htmlspecialchars($agencyProfile['incident_label'] ?? 'Incidents') ?></span>
-            <div class="stat-icon" style="background:rgba(59,130,246,0.12);color:var(--brand-secondary);"><i class="bi bi-broadcast-pin"></i></div>
+            <div class="stat-icon stat-icon-primary"><i class="bi bi-broadcast-pin"></i></div>
         </div>
         <div class="stat-value" id="sc-active"><?= number_format($stats['active']) ?></div>
     </div>
@@ -67,15 +67,15 @@ require_once __DIR__ . '/includes/layout.php';
     <div class="stat-card stat-card-critical" style="--card-accent:var(--color-critical);">
         <div class="stat-card-header">
             <span class="stat-label">Critical / Emergency</span>
-            <div class="stat-icon" style="background:rgba(239,68,68,0.12);color:var(--color-critical);"><i class="bi bi-exclamation-triangle-fill"></i></div>
+            <div class="stat-icon stat-icon-critical"><i class="bi bi-exclamation-triangle-fill"></i></div>
         </div>
         <div class="stat-value" id="sc-critical" style="color:var(--color-critical);"><?= number_format($stats['critical']) ?></div>
     </div>
 
-    <div class="stat-card" style="--card-accent:#F59E0B;">
+    <div class="stat-card" style="--card-accent:var(--color-warning);">
         <div class="stat-card-header">
             <span class="stat-label">Today's Requests</span>
-            <div class="stat-icon" style="background:rgba(245,158,11,0.12);color:#F59E0B;"><i class="bi bi-calendar-check-fill"></i></div>
+            <div class="stat-icon stat-icon-warning"><i class="bi bi-calendar-check-fill"></i></div>
         </div>
         <div class="stat-value" id="sc-today"><?= number_format($stats['today']) ?></div>
     </div>
@@ -83,7 +83,7 @@ require_once __DIR__ . '/includes/layout.php';
     <div class="stat-card" style="--card-accent:var(--color-success);">
         <div class="stat-card-header">
             <span class="stat-label">Resolved</span>
-            <div class="stat-icon" style="background:rgba(34,197,94,0.12);color:var(--color-success);"><i class="bi bi-check-circle-fill"></i></div>
+            <div class="stat-icon stat-icon-success"><i class="bi bi-check-circle-fill"></i></div>
         </div>
         <div class="stat-value" id="sc-resolved" style="color:var(--color-success);"><?= number_format($stats['resolved']) ?></div>
     </div>

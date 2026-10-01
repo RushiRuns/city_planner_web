@@ -128,38 +128,38 @@ require_once __DIR__ . '/includes/layout.php';
 
 <!-- ── KPI Metric Cards ─────────────────────────────────────── -->
 <div class="grid grid-cols-5 gap-4 mb-6" id="adminMetrics">
-    <div class="stat-card" style="--card-accent: #6366F1;">
+    <div class="stat-card" style="--card-accent: var(--brand-secondary);">
         <div class="stat-card-header">
             <span class="stat-label">Total Admins</span>
-            <div class="stat-icon" style="background: rgba(99,102,241,0.12); color: #6366F1;"><i class="bi bi-people-fill"></i></div>
+            <div class="stat-icon stat-icon-primary"><i class="bi bi-people-fill"></i></div>
         </div>
         <div class="stat-value" id="kpi-total">—</div>
     </div>
-    <div class="stat-card" style="--card-accent: #EC4899;">
+    <div class="stat-card" style="--card-accent: var(--dept-ambulance);">
         <div class="stat-card-header">
             <span class="stat-label">Super Admins</span>
-            <div class="stat-icon" style="background: rgba(236,72,153,0.12); color: #EC4899;"><i class="bi bi-shield-fill-check"></i></div>
+            <div class="stat-icon stat-icon-ambulance"><i class="bi bi-shield-fill-check"></i></div>
         </div>
         <div class="stat-value" id="kpi-super">—</div>
     </div>
-    <div class="stat-card" style="--card-accent: #3B82F6;">
+    <div class="stat-card" style="--card-accent: var(--brand-secondary);">
         <div class="stat-card-header">
             <span class="stat-label">Service Dispatchers</span>
-            <div class="stat-icon" style="background: rgba(59,130,246,0.12); color: #3B82F6;"><i class="bi bi-building-fill-gear"></i></div>
+            <div class="stat-icon stat-icon-police"><i class="bi bi-building-fill-gear"></i></div>
         </div>
         <div class="stat-value" id="kpi-dept">—</div>
     </div>
-    <div class="stat-card" style="--card-accent: #10B981;">
+    <div class="stat-card" style="--card-accent: var(--color-success);">
         <div class="stat-card-header">
             <span class="stat-label">Station Admins</span>
-            <div class="stat-icon" style="background: rgba(16,185,129,0.12); color: #10B981;"><i class="bi bi-geo-alt-fill"></i></div>
+            <div class="stat-icon stat-icon-success"><i class="bi bi-geo-alt-fill"></i></div>
         </div>
         <div class="stat-value" id="kpi-station">—</div>
     </div>
-    <div class="stat-card" style="--card-accent: #F59E0B;">
+    <div class="stat-card" style="--card-accent: var(--color-warning);">
         <div class="stat-card-header">
             <span class="stat-label">Active (24h)</span>
-            <div class="stat-icon" style="background: rgba(245,158,11,0.12); color: #F59E0B;"><i class="bi bi-broadcast"></i></div>
+            <div class="stat-icon stat-icon-warning"><i class="bi bi-broadcast"></i></div>
         </div>
         <div class="stat-value" id="kpi-active-today">—</div>
     </div>

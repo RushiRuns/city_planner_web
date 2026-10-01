@@ -1,14 +1,21 @@
 "use strict";
 const Charts = {
+    getColor(varName, fallback) {
+        if (typeof window !== 'undefined' && window.getComputedStyle) {
+            const val = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+            if (val) return val;
+        }
+        return fallback;
+    },
     defaults: {
         font: { family: "Inter", size: 11 },
         grid: () => document.documentElement.getAttribute("data-theme") === "dark" ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)",
-        text: () => document.documentElement.getAttribute("data-theme") === "dark" ? "#94A3B8" : "#64748B",
+        text: () => Charts.getColor('--text-secondary', document.documentElement.getAttribute("data-theme") === "dark" ? "#94A3B8" : "#64748B"),
         tooltip: () => ({
-            backgroundColor: document.documentElement.getAttribute("data-theme") === "dark" ? "#1E293B" : "#FFFFFF",
-            titleColor: document.documentElement.getAttribute("data-theme") === "dark" ? "#F1F5F9" : "#0F172A",
-            bodyColor: document.documentElement.getAttribute("data-theme") === "dark" ? "#94A3B8" : "#475569",
-            borderColor: document.documentElement.getAttribute("data-theme") === "dark" ? "rgba(255,255,255,0.12)" : "#E2E8F0",
+            backgroundColor: Charts.getColor('--bg-surface', document.documentElement.getAttribute("data-theme") === "dark" ? "#1E293B" : "#FFFFFF"),
+            titleColor: Charts.getColor('--text-primary', document.documentElement.getAttribute("data-theme") === "dark" ? "#F1F5F9" : "#0F172A"),
+            bodyColor: Charts.getColor('--text-secondary', document.documentElement.getAttribute("data-theme") === "dark" ? "#94A3B8" : "#475569"),
+            borderColor: Charts.getColor('--border-medium', document.documentElement.getAttribute("data-theme") === "dark" ? "rgba(255,255,255,0.12)" : "#E2E8F0"),
             borderWidth: 1,
             padding: 10,
             cornerRadius: 8,
