@@ -1,57 +1,57 @@
 /* ============================================================
    CITY PLANNER WEB ADMIN — DESIGN SYSTEM
-   Premium Smart City Command Interface
+   Modern Command Center Interface
    ============================================================ */
 
 /* ── Google Fonts ─────────────────────────────────────────── */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap');
 
-/* ── CSS Custom Properties — Light Mode ─────────────────────── */
+/* ── CSS Custom Properties — Light Mode (Default) ───────────── */
 :root {
-    /* Brand */
-    --brand-primary:    #1E40AF;
-    --brand-secondary:  #3B82F6;
-    --brand-accent:     #60A5FA;
-    --brand-glow:       rgba(59,130,246,0.15);
+    /* Brand — Indigo default; overridden per agency theme */
+    --brand-primary:    #4338CA;
+    --brand-secondary:  #6366F1;
+    --brand-accent:     #818CF8;
+    --brand-glow:       rgba(99,102,241,0.15);
 
-    /* Backgrounds */
-    --bg-base:          #f7f7f8;
-    --bg-surface:       #ffffff;
-    --bg-surface-2:     #f0f0f0;
-    --bg-elevated:      #f4f4f5;
+    /* Backgrounds — Pure whites & warm neutral greys; zero blue tint */
+    --bg-base:          #ffffff;
+    --bg-surface:       #fafafa;
+    --bg-surface-2:     #f5f5f5;
+    --bg-elevated:      #eeeeee;
     --bg-overlay:       rgba(0,0,0,0.5);
-    --bg-sidebar:       #0F172A;
-    --bg-sidebar-hover: rgba(255,255,255,0.06);
-    --bg-sidebar-active:rgba(59,130,246,0.15);
+    --bg-sidebar:       #1a1a1a;          /* Pure charcoal sidebar — no navy, no blue */
+    --bg-sidebar-hover: rgba(255,255,255,0.05);
+    --bg-sidebar-active:rgba(255,255,255,0.09);
 
     /* Text */
-    --text-primary:     #0F172A;
-    --text-secondary:   #475569;
-    --text-muted:       #94A3B8;
+    --text-primary:     #1a1a1a;
+    --text-secondary:   #5a5a5a;
+    --text-muted:       #8a8a8a;
     --text-inverse:     #FFFFFF;
-    --text-sidebar:     rgba(255,255,255,0.7);
+    --text-sidebar:     rgba(255,255,255,0.65);
     --text-sidebar-act: #FFFFFF;
 
-    /* Borders */
-    --border-light:     #e4e4e7;
-    --border-medium:    #e4e4e7;
-    --border-strong:    #94A3B8;
+    /* Borders — Pure neutral grey; zero blue undertone */
+    --border-light:     #e0e0e0;
+    --border-medium:    #d0d0d0;
+    --border-strong:    #b0b0b0;
 
-    /* Severity — Emergency Command Colors */
-    --color-critical:   #EF4444;
-    --color-critical-bg:#FEF2F2;
-    --color-critical-border: #FECACA;
-    --color-warning:    #F59E0B;
-    --color-warning-bg: #FFFBEB;
-    --color-warning-border: #FDE68A;
-    --color-info:       #3B82F6;
-    --color-info-bg:    #EFF6FF;
-    --color-info-border:#BFDBFE;
-    --color-success:    #22C55E;
-    --color-success-bg: #F0FDF4;
-    --color-success-border: #BBF7D0;
-    --color-neutral:    #94A3B8;
-    --color-neutral-bg: #F1F5F9;
+    /* Severity — Status Colors (higher saturation for light backgrounds) */
+    --color-critical:        #dc2626;
+    --color-critical-bg:     #fee2e2;
+    --color-critical-border: #fca5a5;
+    --color-warning:         #d97706;
+    --color-warning-bg:      #fef3c7;
+    --color-warning-border:  #fcd34d;
+    --color-info:            #2563eb;
+    --color-info-bg:         #dbeafe;
+    --color-info-border:     #93c5fd;
+    --color-success:         #059669;
+    --color-success-bg:      #d1fae5;
+    --color-success-border:  #6ee7b7;
+    --color-neutral:         #8a8a8a;
+    --color-neutral-bg:      #f5f5f5;
 
     /* Department Colors */
     --dept-fire:        #EF4444;
@@ -67,14 +67,14 @@
     --dept-clean:       #22C55E;
     --dept-citizen:     #F97316;
 
-    /* Shadows */
-    --shadow-xs:        0 1px 2px rgba(0,0,0,0.05);
-    --shadow-sm:        0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
-    --shadow-md:        0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06);
-    --shadow-lg:        0 10px 15px rgba(0,0,0,0.1), 0 4px 6px rgba(0,0,0,0.05);
-    --shadow-xl:        0 20px 25px rgba(0,0,0,0.1), 0 10px 10px rgba(0,0,0,0.04);
-    --shadow-glow-blue: 0 0 20px rgba(59,130,246,0.3);
-    --shadow-glow-red:  0 0 20px rgba(239,68,68,0.3);
+    /* Shadows — Minimal & precise */
+    --shadow-xs:        0 1px 2px rgba(0,0,0,0.04);
+    --shadow-sm:        0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md:        0 4px 6px rgba(0,0,0,0.06), 0 2px 4px rgba(0,0,0,0.04);
+    --shadow-lg:        0 10px 15px rgba(0,0,0,0.08), 0 4px 6px rgba(0,0,0,0.04);
+    --shadow-xl:        0 20px 25px rgba(0,0,0,0.08), 0 10px 10px rgba(0,0,0,0.03);
+    --shadow-glow-blue: 0 0 20px rgba(99,102,241,0.25);
+    --shadow-glow-red:  0 0 20px rgba(220,38,38,0.25);
 
     /* Typography */
     --font-family:      'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -100,12 +100,12 @@
     --space-12: 3rem;
     --space-16: 4rem;
 
-    /* Border Radius */
-    --radius-sm:   0.375rem;
-    --radius-md:   0.5rem;
-    --radius-lg:   0.75rem;
-    --radius-xl:   1rem;
-    --radius-2xl:  1.5rem;
+    /* Border Radius — Tighter & more precise for command-center feel */
+    --radius-sm:   0.25rem;   /* 4px  */
+    --radius-md:   0.375rem;  /* 6px  */
+    --radius-lg:   0.5rem;    /* 8px  */
+    --radius-xl:   0.75rem;   /* 12px */
+    --radius-2xl:  1rem;      /* 16px */
     --radius-full: 9999px;
 
     /* Transitions */
@@ -113,7 +113,7 @@
     --transition-base:   250ms ease;
     --transition-slow:   400ms ease;
 
-    /* Sidebar */
+    /* Layout & Z-Index */
     --sidebar-width:     260px;
     --sidebar-collapsed: 70px;
     --header-height:     64px;
@@ -123,39 +123,47 @@
     --z-toast:           2000;
 }
 
-/* ── Dark Mode (Pure Neutral Grey-Scale) ───────────────────────── */
+/* ── Dark Mode (Pure Neutral Grey-Scale — Zero Color Tint) ─── */
 [data-theme="dark"] {
-    --bg-base:          #0d0d0d;
-    --bg-surface:       #161616;
-    --bg-surface-2:     #1f1f1f;
-    --bg-elevated:      #1f1f1f;
-    --bg-muted:         #333333;
-    --bg-sidebar:       #111111;
+    --bg-base:          #1a1a1a;
+    --bg-surface:       #242424;
+    --bg-surface-2:     #2e2e2e;
+    --bg-elevated:      #383838;
+    --bg-muted:         #404040;
+    --bg-sidebar:       #141414;
     --bg-sidebar-hover: rgba(255,255,255,0.05);
-    --bg-sidebar-active:#1f1f1f;
+    --bg-sidebar-active:#2e2e2e;
 
-    --text-primary:     #f0f0f0;
+    --text-primary:     #e8e8e8;
     --text-secondary:   #a0a0a0;
     --text-muted:       #606060;
 
-    --border-light:     #2a2a2a;
-    --border-medium:    #2a2a2a;
-    --border-strong:    #333333;
+    --border-light:     #2e2e2e;
+    --border-medium:    #3a3a3a;
+    --border-strong:    #4a4a4a;
 
-    --color-critical-bg:    rgba(239,68,68,0.1);
-    --color-critical-border:rgba(239,68,68,0.3);
-    --color-warning-bg:     rgba(245,158,11,0.1);
-    --color-warning-border: rgba(245,158,11,0.3);
-    --color-info-bg:        rgba(59,130,246,0.1);
-    --color-info-border:    rgba(59,130,246,0.3);
-    --color-success-bg:     rgba(34,197,94,0.1);
-    --color-success-border: rgba(34,197,94,0.3);
-    --color-neutral-bg:     rgba(148,163,184,0.1);
+    --color-critical:        #f87171;
+    --color-critical-bg:     rgba(239,68,68,0.12);
+    --color-critical-border: rgba(239,68,68,0.30);
+    --color-warning:         #fbbf24;
+    --color-warning-bg:      rgba(245,158,11,0.12);
+    --color-warning-border:  rgba(245,158,11,0.30);
+    --color-info:            #60a5fa;
+    --color-info-bg:         rgba(59,130,246,0.12);
+    --color-info-border:     rgba(59,130,246,0.30);
+    --color-success:         #34d399;
+    --color-success-bg:      rgba(16,185,129,0.12);
+    --color-success-border:  rgba(16,185,129,0.30);
+    --color-neutral:         #707070;
+    --color-neutral-bg:      rgba(255,255,255,0.05);
 
-    --shadow-sm:  0 1px 3px rgba(0,0,0,0.4);
-    --shadow-md:  0 4px 6px rgba(0,0,0,0.4), 0 2px 4px rgba(0,0,0,0.3);
-    --shadow-lg:  0 10px 15px rgba(0,0,0,0.5), 0 4px 6px rgba(0,0,0,0.3);
-    --shadow-xl:  0 20px 25px rgba(0,0,0,0.5), 0 10px 10px rgba(0,0,0,0.3);
+    --shadow-xs:  0 1px 2px rgba(0,0,0,0.5);
+    --shadow-sm:  0 1px 3px rgba(0,0,0,0.5), 0 1px 2px rgba(0,0,0,0.4);
+    --shadow-md:  0 4px 6px rgba(0,0,0,0.5), 0 2px 4px rgba(0,0,0,0.4);
+    --shadow-lg:  0 10px 15px rgba(0,0,0,0.6), 0 4px 6px rgba(0,0,0,0.4);
+    --shadow-xl:  0 20px 25px rgba(0,0,0,0.6), 0 10px 10px rgba(0,0,0,0.3);
+    --shadow-glow-blue: 0 0 20px rgba(99,102,241,0.20);
+    --shadow-glow-red:  0 0 20px rgba(248,113,113,0.20);
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -244,102 +252,105 @@
    DARK MODE AGENCY SURFACES (Pure Neutral Grey-Scale)
    ═══════════════════════════════════════════════════════════════ */
 [data-theme="dark"][data-agency="police"] {
-    --bg-base:            #0d0d0d;
-    --bg-surface:         #161616;
-    --bg-surface-2:       #1f1f1f;
-    --bg-elevated:        #1f1f1f;
-    --bg-sidebar:         #111111;
+    --bg-base:            #1a1a1a;
+    --bg-surface:         #242424;
+    --bg-surface-2:       #2e2e2e;
+    --bg-elevated:        #383838;
+    --bg-sidebar:         #141414;
     --bg-sidebar-hover:   rgba(255,255,255,0.05);
-    --bg-sidebar-active:  #1f1f1f;
-    --border-light:       #2a2a2a;
-    --border-medium:      #2a2a2a;
-    --border-strong:      #333333;
+    --bg-sidebar-active:  #2e2e2e;
+    --border-light:       #2e2e2e;
+    --border-medium:      #3a3a3a;
+    --border-strong:      #4a4a4a;
 }
 
 [data-theme="dark"][data-agency="fire"] {
-    --bg-base:            #0d0d0d;
-    --bg-surface:         #161616;
-    --bg-surface-2:       #1f1f1f;
-    --bg-elevated:        #1f1f1f;
-    --bg-sidebar:         #111111;
+    --bg-base:            #1a1a1a;
+    --bg-surface:         #242424;
+    --bg-surface-2:       #2e2e2e;
+    --bg-elevated:        #383838;
+    --bg-sidebar:         #141414;
     --bg-sidebar-hover:   rgba(255,255,255,0.05);
-    --bg-sidebar-active:  #1f1f1f;
-    --border-light:       #2a2a2a;
-    --border-medium:      #2a2a2a;
-    --border-strong:      #333333;
+    --bg-sidebar-active:  #2e2e2e;
+    --border-light:       #2e2e2e;
+    --border-medium:      #3a3a3a;
+    --border-strong:      #4a4a4a;
 }
 
 [data-theme="dark"][data-agency="medical"] {
-    --bg-base:            #0d0d0d;
-    --bg-surface:         #161616;
-    --bg-surface-2:       #1f1f1f;
-    --bg-elevated:        #1f1f1f;
-    --bg-sidebar:         #111111;
+    --bg-base:            #1a1a1a;
+    --bg-surface:         #242424;
+    --bg-surface-2:       #2e2e2e;
+    --bg-elevated:        #383838;
+    --bg-sidebar:         #141414;
     --bg-sidebar-hover:   rgba(255,255,255,0.05);
-    --bg-sidebar-active:  #1f1f1f;
-    --border-light:       #2a2a2a;
-    --border-medium:      #2a2a2a;
-    --border-strong:      #333333;
+    --bg-sidebar-active:  #2e2e2e;
+    --border-light:       #2e2e2e;
+    --border-medium:      #3a3a3a;
+    --border-strong:      #4a4a4a;
 }
 
 [data-theme="dark"][data-agency="rescue"] {
-    --bg-base:            #0d0d0d;
-    --bg-surface:         #161616;
-    --bg-surface-2:       #1f1f1f;
-    --bg-elevated:        #1f1f1f;
-    --bg-sidebar:         #111111;
+    --bg-base:            #1a1a1a;
+    --bg-surface:         #242424;
+    --bg-surface-2:       #2e2e2e;
+    --bg-elevated:        #383838;
+    --bg-sidebar:         #141414;
     --bg-sidebar-hover:   rgba(255,255,255,0.05);
-    --bg-sidebar-active:  #1f1f1f;
-    --border-light:       #2a2a2a;
-    --border-medium:      #2a2a2a;
-    --border-strong:      #333333;
+    --bg-sidebar-active:  #2e2e2e;
+    --border-light:       #2e2e2e;
+    --border-medium:      #3a3a3a;
+    --border-strong:      #4a4a4a;
 }
 
 [data-theme="dark"][data-agency="municipal"] {
-    --bg-base:            #0d0d0d;
-    --bg-surface:         #161616;
-    --bg-surface-2:       #1f1f1f;
-    --bg-elevated:        #1f1f1f;
-    --bg-sidebar:         #111111;
+    --bg-base:            #1a1a1a;
+    --bg-surface:         #242424;
+    --bg-surface-2:       #2e2e2e;
+    --bg-elevated:        #383838;
+    --bg-sidebar:         #141414;
     --bg-sidebar-hover:   rgba(255,255,255,0.05);
-    --bg-sidebar-active:  #1f1f1f;
-    --border-light:       #2a2a2a;
-    --border-medium:      #2a2a2a;
-    --border-strong:      #333333;
+    --bg-sidebar-active:  #2e2e2e;
+    --border-light:       #2e2e2e;
+    --border-medium:      #3a3a3a;
+    --border-strong:      #4a4a4a;
 }
 
 [data-theme="dark"][data-agency="superadmin"] {
-    --bg-base:            #0d0d0d;
-    --bg-surface:         #161616;
-    --bg-surface-2:       #1f1f1f;
-    --bg-elevated:        #1f1f1f;
-    --bg-sidebar:         #111111;
+    --bg-base:            #1a1a1a;
+    --bg-surface:         #242424;
+    --bg-surface-2:       #2e2e2e;
+    --bg-elevated:        #383838;
+    --bg-sidebar:         #141414;
     --bg-sidebar-hover:   rgba(255,255,255,0.05);
-    --bg-sidebar-active:  #1f1f1f;
-    --border-light:       #2a2a2a;
-    --border-medium:      #2a2a2a;
-    --border-strong:      #333333;
+    --bg-sidebar-active:  #2e2e2e;
+    --border-light:       #2e2e2e;
+    --border-medium:      #3a3a3a;
+    --border-strong:      #4a4a4a;
 }
 
 /* ═══════════════════════════════════════════════════════════════
    LIGHT MODE SURFACES (Clean, Modern, High-Contrast)
    ═══════════════════════════════════════════════════════════════ */
 [data-theme="light"] {
-    --bg-base:          #f7f7f8;
-    --bg-surface:       #ffffff;
-    --bg-surface-2:     #f0f0f0;
-    --bg-elevated:      #f4f4f5;
-    --bg-sidebar:       #ffffff;
-    --bg-sidebar-hover: rgba(0,0,0,0.05);
-    --bg-sidebar-active:#f4f4f5;
-    --text-primary:     #0F172A;
-    --text-secondary:   #475569;
-    --text-muted:       #94A3B8;
-    --border-light:     #e4e4e7;
-    --border-medium:    #e4e4e7;
-    --border-strong:    #94A3B8;
+    --bg-base:          #ffffff;
+    --bg-surface:       #fafafa;
+    --bg-surface-2:     #f5f5f5;
+    --bg-elevated:      #eeeeee;
+    --bg-sidebar:       #f9f9f9;          /* Light grey sidebar with visible distinction */
+    --bg-sidebar-hover: rgba(0,0,0,0.04);
+    --bg-sidebar-active:#eeeeee;
+    --text-primary:     #1a1a1a;
+    --text-secondary:   #5a5a5a;
+    --text-muted:       #8a8a8a;
+    --text-sidebar:     #2a2a2a;          /* Dark text for light sidebar */
+    --text-sidebar-act: #1a1a1a;
+    --border-light:     #e0e0e0;
+    --border-medium:    #d0d0d0;
+    --border-strong:    #b0b0b0;
 }
 
+/* ── Agency subtle surface tints in Light Mode (intentional branding) ── */
 [data-theme="light"][data-agency="police"] {
     --bg-base:          #F0F4FA;
     --bg-surface-2:     #E8EEF8;
@@ -637,22 +648,22 @@ img { max-width: 100%; display: block; }
 .btn-primary {
     background: var(--brand-secondary);
     color: #fff;
-    box-shadow: 0 2px 8px rgba(59,130,246,0.3);
+    box-shadow: 0 2px 8px rgba(99,102,241,0.3);
 }
 .btn-primary:hover {
     background: var(--brand-primary);
-    box-shadow: 0 4px 12px rgba(59,130,246,0.4);
+    box-shadow: 0 4px 12px rgba(99,102,241,0.4);
     transform: translateY(-1px);
 }
 
 .btn-danger {
     background: var(--color-critical);
     color: #fff;
-    box-shadow: 0 2px 8px rgba(239,68,68,0.3);
+    box-shadow: 0 2px 8px rgba(220,38,38,0.3);
 }
 .btn-danger:hover {
-    background: #DC2626;
-    box-shadow: 0 4px 12px rgba(239,68,68,0.4);
+    background: #B91C1C;
+    box-shadow: 0 4px 12px rgba(220,38,38,0.4);
     transform: translateY(-1px);
 }
 
@@ -660,13 +671,13 @@ img { max-width: 100%; display: block; }
     background: var(--color-success);
     color: #fff;
 }
-.btn-success:hover { background: #16A34A; transform: translateY(-1px); }
+.btn-success:hover { background: #047857; transform: translateY(-1px); }
 
 .btn-warning {
     background: var(--color-warning);
     color: #fff;
 }
-.btn-warning:hover { background: #D97706; transform: translateY(-1px); }
+.btn-warning:hover { background: #B45309; transform: translateY(-1px); }
 
 .btn-ghost {
     background: transparent;
@@ -717,14 +728,14 @@ img { max-width: 100%; display: block; }
 }
 .form-control:focus {
     border-color: var(--brand-secondary);
-    box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+    box-shadow: 0 0 0 3px var(--brand-glow);
 }
 .form-control::placeholder { color: var(--text-muted); }
 
 select.form-control {
     cursor: pointer;
     appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%2394A3B8'%3E%3Cpath fill-rule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%238a8a8a'%3E%3Cpath fill-rule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 12px center;
     background-size: 16px;
@@ -795,8 +806,8 @@ select.form-control {
     overflow: hidden;
 }
 
-.stat-card:hover { 
-    box-shadow: var(--shadow-md); 
+.stat-card:hover {
+    box-shadow: var(--shadow-md);
 }
 
 /* Critical stat card - has left accent border */
@@ -812,11 +823,11 @@ select.form-control {
 }
 
 .stat-icon {
-    width: 40px; 
+    width: 40px;
     height: 40px;
     border-radius: var(--radius-md);
-    display: flex; 
-    align-items: center; 
+    display: flex;
+    align-items: center;
     justify-content: center;
     font-size: 18px;
     flex-shrink: 0;
@@ -836,9 +847,8 @@ select.form-control {
 .stat-icon-road      { background: rgba(234,88,12,0.12); color: var(--dept-road); }
 .stat-icon-ambulance { background: rgba(236,72,153,0.12); color: var(--dept-ambulance); }
 
-
-.stat-content { 
-    flex: 1; 
+.stat-content {
+    flex: 1;
 }
 
 .stat-value {
@@ -1096,7 +1106,7 @@ code, .mono {
     bottom: calc(100% + 6px);
     left: 50%;
     transform: translateX(-50%);
-    background: #1E293B;
+    background: #1a1a1a;
     color: #fff;
     font-size: 11px;
     font-weight: 500;

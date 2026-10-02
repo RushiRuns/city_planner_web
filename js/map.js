@@ -12,12 +12,30 @@ const MapView = {
     stationsVisible: false,
     stationData: [],
     refreshTimer: null,
+    baseLayers: {},
+    currentTileType: 'standard',
+    markerLookup: {},
+    trackerLookup: {},
+    stationLookup: {},
 
     init(containerId = 'dashMap', options = {}) {
         const container = document.getElementById(containerId);
         if (!container || this.map) return;
 
-        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        // Inject dark map CSS filter if not already present
+        if (!document.getElementById('map-dark-tiles-style')) {
+            const style = document.createElement('style');
+            style.id = 'map-dark-tiles-style';
+            style.textContent = `
+                [data-theme="dark"] .leaflet-container:not(.satellite-active) .leaflet-tile-pane {
+                    filter: brightness(0.6) invert(1) contrast(2.8) hue-rotate(200deg) saturate(0.25) brightness(0.75);
+                }
+                [data-theme="dark"] .leaflet-container {
+                    background: #0b1120 !important;
+                }
+            `;
+            document.head.appendChild(style);
+        }
 
         this.map = L.map(containerId, {
             center:         options.center   || [18.5204, 73.8567],
@@ -26,19 +44,19 @@ const MapView = {
             attributionControl: false,
         });
 
-        // Dark/Light tile layers
-        const lightTiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors',
-        });
-        const darkTiles  = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-            attribution: '© OpenStreetMap contributors, © CARTO',
-        });
+        // Clean watermark-free base layers
+        this.baseLayers = {
+            standard: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '© OpenStreetMap contributors',
+            }),
+            satellite: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                maxZoom: 19,
+                attribution: 'Tiles © Esri',
+            })
+        };
 
-        if (isDark) {
-            darkTiles.addTo(this.map);
-        } else {
-            lightTiles.addTo(this.map);
-        }
+        this.baseLayers.standard.addTo(this.map);
 
         this.incidentLayer = L.layerGroup().addTo(this.map);
         this.trackerLayer  = L.layerGroup().addTo(this.map);
@@ -55,9 +73,6 @@ const MapView = {
         const observer = new MutationObserver((mutations) => {
             mutations.forEach(m => {
                 if (m.attributeName === 'data-theme') {
-                    const dark = document.documentElement.getAttribute('data-theme') === 'dark';
-                    this.map.eachLayer(l => { if (l instanceof L.TileLayer) this.map.removeLayer(l); });
-                    (dark ? darkTiles : lightTiles).addTo(this.map);
                     // Re-render stations with updated theme colors
                     if (this.stationsVisible && this.stationData.length) {
                         this.renderStations(this.stationData);
@@ -88,6 +103,8 @@ const MapView = {
     renderMarkers(incidents, trackers) {
         this.incidentLayer.clearLayers();
         this.trackerLayer.clearLayers();
+        this.markerLookup = {};
+        this.trackerLookup = {};
 
         const urgencyColors = {
             emergency: '#EF4444',
@@ -138,6 +155,7 @@ const MapView = {
                 </div>
             `, { maxWidth: 260 });
 
+            this.markerLookup[inc.id] = marker;
             this.incidentLayer.addLayer(marker);
         });
 
@@ -158,9 +176,10 @@ const MapView = {
                     box-shadow:0 2px 8px ${color}60;
                     font-size:12px;color:#fff;font-weight:700;">📡</div>`,
             });
-            L.marker([t.lat, t.lng], { icon: trackerIcon })
-             .bindPopup(`<b>Live Responder</b><br>${t.id}<br>${t.stale ? '⚠️ Stale data' : '🟢 Live'}`)
-             .addTo(this.trackerLayer);
+            const m = L.marker([t.lat, t.lng], { icon: trackerIcon })
+             .bindPopup(`<b>Live Responder</b><br>${t.id}<br>${t.stale ? '⚠️ Stale data' : '🟢 Live'}`);
+            this.trackerLookup[t.id] = m;
+            this.trackerLayer.addLayer(m);
         });
 
         // Add CSS animation for pulsing markers
@@ -245,16 +264,78 @@ const MapView = {
                            style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;background:${color};color:#fff;padding:8px 12px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;">
                             <i class="bi bi-cursor-fill" style="font-size:13px;"></i> Get Directions
                         </a>
-                        <a href="${(typeof window !== 'undefined' && window.BASE_URL) || ''}employees.php?station=${encodeURIComponent(stn.station_id)}" 
-                           style="display:flex;align-items:center;justify-content:center;gap:4px;background:${isDark ? '#1E293B' : '#F1F5F9'};color:${popupText};padding:8px 12px;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;border:1px solid ${popupBorder};">
                             <i class="bi bi-people-fill" style="font-size:12px;"></i> Staff
                         </a>
                     </div>
                 </div>
             `, { maxWidth: 320, className: 'station-popup-container' });
 
+            this.stationLookup[stn.station_id] = marker;
             this.stationLayer.addLayer(marker);
         });
+    },
+
+    setMapType(type) {
+        if (!this.map || !this.baseLayers) return;
+        this.currentTileType = type;
+        const container = this.map.getContainer();
+
+        if (type === 'satellite') {
+            if (this.map.hasLayer(this.baseLayers.standard)) this.map.removeLayer(this.baseLayers.standard);
+            this.baseLayers.satellite.addTo(this.map);
+            container.classList.add('satellite-active');
+        } else {
+            if (this.map.hasLayer(this.baseLayers.satellite)) this.map.removeLayer(this.baseLayers.satellite);
+            this.baseLayers.standard.addTo(this.map);
+            container.classList.remove('satellite-active');
+        }
+    },
+
+    toggleSatellite() {
+        const next = this.currentTileType === 'satellite' ? 'standard' : 'satellite';
+        this.setMapType(next);
+        return next === 'satellite';
+    },
+
+    focusIncident(id) {
+        const marker = this.markerLookup[id];
+        if (marker && this.map) {
+            this.map.flyTo(marker.getLatLng(), 16, { duration: 1.2 });
+            marker.openPopup();
+            return true;
+        }
+        return false;
+    },
+
+    focusTracker(id) {
+        const marker = this.trackerLookup[id];
+        if (marker && this.map) {
+            this.map.flyTo(marker.getLatLng(), 16, { duration: 1.2 });
+            marker.openPopup();
+            return true;
+        }
+        return false;
+    },
+
+    focusStation(id) {
+        if (!this.stationsVisible) {
+            this.toggleStations(true);
+            const btn = document.getElementById('btnLiveToggleStations');
+            if (btn) btn.classList.add('active');
+        }
+        const marker = this.stationLookup[id];
+        if (marker && this.map) {
+            this.map.flyTo(marker.getLatLng(), 16, { duration: 1.2 });
+            marker.openPopup();
+            return true;
+        }
+        return false;
+    },
+
+    recenter(center = [18.5204, 73.8567], zoom = 12) {
+        if (this.map) {
+            this.map.flyTo(center, zoom, { duration: 1 });
+        }
     },
 
     async loadStations(params = {}) {

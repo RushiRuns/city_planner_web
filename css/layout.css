@@ -506,7 +506,7 @@
 }
 .dashboard-main-grid {
     display: grid;
-    grid-template-columns: 1fr 380px;
+    grid-template-columns: 1fr;
     width: 100%;
     box-sizing: border-box;
 }

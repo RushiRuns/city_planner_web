@@ -8,7 +8,9 @@ const Dashboard = {
     refreshInterval: 30000, // 30 seconds
     timer: null,
     trendChart: null,
-    maxItems: 10,
+    maxItems: 15,
+    activeIncidentFilter: 'all',
+    rawIncidents: [],
 
     async init() {
         this.initChart();
@@ -89,43 +91,92 @@ const Dashboard = {
         }
     },
 
-    updateIncidentsList(incidents) {
+    setFilter(filter, btn) {
+        this.activeIncidentFilter = filter;
+        document.querySelectorAll('.incident-filter-btn').forEach(b => b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+        this.renderIncidents();
+    },
+
+    renderIncidents() {
         const container = document.getElementById('liveIncidentsList');
         if (!container) return;
+
+        let incidents = this.rawIncidents || [];
+
+        // Apply selected tab filter
+        if (this.activeIncidentFilter === 'critical') {
+            incidents = incidents.filter(i => (i.urgency === 'emergency' || i.urgency === 'critical'));
+        } else if (this.activeIncidentFilter === 'inProgress') {
+            incidents = incidents.filter(i => (i.status === 'inProgress' || i.status === 'dispatched'));
+        } else if (this.activeIncidentFilter === 'pending') {
+            incidents = incidents.filter(i => (i.status === 'submitted' || i.status === 'acknowledged'));
+        }
+
+        const countEl = document.getElementById('liveIncidentsCount');
+        if (countEl) {
+            countEl.textContent = `${this.rawIncidents.length} Active`;
+        }
+
+        const summaryEl = document.getElementById('liveIncidentsSummary');
+        if (summaryEl) {
+            summaryEl.textContent = `Showing ${Math.min(incidents.length, this.maxItems)} of ${this.rawIncidents.length} live incidents`;
+        }
 
         if (!incidents.length) {
             container.innerHTML = `<div class="empty-state" style="padding:var(--space-8);">
                 <div class="empty-state-icon">✅</div>
-                <div class="empty-state-title">No Active Incidents</div>
-                <div class="empty-state-desc">All systems operating normally.</div>
+                <div class="empty-state-title">${this.activeIncidentFilter === 'all' ? 'No Active Incidents' : 'No Matching Incidents'}</div>
+                <div class="empty-state-desc">${this.activeIncidentFilter === 'all' ? 'All systems operating normally.' : 'No incidents match the selected filter.'}</div>
             </div>`;
             return;
         }
 
-        container.innerHTML = incidents.slice(0, this.maxItems).map(inc => {
-            const urgencyClass = inc.urgency === 'emergency' ? 'critical' : inc.urgency;
-            const statusBadge  = this.statusBadge(inc.status);
-            const base = (typeof window !== 'undefined' && window.BASE_URL) || '';
-            return `
-            <a href="${base}request_detail.php?id=${encodeURIComponent(inc.request_id)}"
-               class="incident-item ${urgencyClass}">
-                <div class="incident-icon" style="background:${inc.category_color}20;color:${inc.category_color};">
-                    <i class="bi ${inc.category_icon}"></i>
-                </div>
-                <div class="incident-info">
-                    <div class="incident-id">${inc.request_id}</div>
-                    <div class="incident-name">${escHtml(inc.citizen_name)} — ${escHtml(inc.category_name)}</div>
-                    <div class="incident-loc"><i class="bi bi-geo-alt"></i> ${escHtml(inc.location_address)}</div>
-                </div>
-                <div class="incident-meta">
-                    ${statusBadge}
-                    <span class="incident-time">${inc.time_ago}</span>
-                </div>
-            </a>`;
-        }).join('');
+        const base = (typeof window !== 'undefined' && window.BASE_URL) || '';
 
-        // Update map marker count
-        this.setEl('mapMarkerCount', `${incidents.length} active`);
+        container.innerHTML = incidents.slice(0, this.maxItems).map(inc => {
+            const isCritical = (inc.urgency === 'emergency' || inc.urgency === 'critical');
+            const urgencyClass = isCritical ? 'critical' : (inc.urgency || '');
+            const urgencyLabel = isCritical ? 'Critical' : (inc.urgency ? inc.urgency.charAt(0).toUpperCase() + inc.urgency.slice(1) : 'Normal');
+            const urgencyBadgeClass = isCritical ? 'badge-critical' : (inc.urgency === 'high' ? 'badge-warning' : (inc.urgency === 'medium' ? 'badge-info' : 'badge-neutral'));
+            const statusBadge  = this.statusBadge(inc.status);
+
+            return `
+            <div class="incident-item ${urgencyClass}">
+                <div class="incident-id"><code class="mono" style="font-size:11px;">${escHtml(inc.request_id)}</code></div>
+                <div class="citizen-cat">
+                    <div class="incident-icon" style="background:${inc.category_color}20;color:${inc.category_color};">
+                        <i class="bi ${inc.category_icon}"></i>
+                    </div>
+                    <div style="min-width:0;">
+                        <div class="citizen-name" title="${escHtml(inc.citizen_name)}">${escHtml(inc.citizen_name)}</div>
+                        <div class="category-name">${escHtml(inc.category_name)}</div>
+                    </div>
+                </div>
+                <div class="incident-loc" title="${escHtml(inc.location_address)}">
+                    <i class="bi bi-geo-alt"></i>
+                    <span>${escHtml(inc.location_address)}</span>
+                </div>
+                <div>
+                    <span class="badge ${urgencyBadgeClass}">${urgencyLabel}</span>
+                </div>
+                <div>${statusBadge}</div>
+                <div class="incident-time">${escHtml(inc.time_ago || '')}</div>
+                <div class="incident-action">
+                    <a href="${base}request_detail.php?id=${encodeURIComponent(inc.request_id)}"
+                       class="btn btn-ghost btn-sm"
+                       title="View Details"
+                       style="padding:4px 8px;font-size:12px;">
+                        <i class="bi bi-eye"></i>
+                    </a>
+                </div>
+            </div>`;
+        }).join('');
+    },
+
+    updateIncidentsList(incidents) {
+        this.rawIncidents = incidents || [];
+        this.renderIncidents();
     },
 
     updateDeptBreakdown(depts) {

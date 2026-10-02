@@ -23,14 +23,36 @@ $admin = getSessionAdmin();
 
 // ── Build category scope filter ────────────────────────────────
 $categoryFilter = '';
-if ($admin && $admin['role'] !== 'super_admin') {
-    $cats = getAdminCategoryList($admin);
-    if (empty($cats)) {
+$adminCats = ($admin && $admin['role'] !== 'super_admin') ? getAdminCategoryList($admin) : array_keys(CATEGORIES);
+
+$reqCats = getParam('categories');
+if ($reqCats !== '') {
+    $requested = array_filter(array_map('trim', explode(',', $reqCats)));
+    $filteredCats = array_intersect($requested, $adminCats);
+    if (empty($filteredCats)) {
         $categoryFilter = " AND 1=0";
     } else {
-        $escaped = array_map(fn($c) => "'" . $db->real_escape_string($c) . "'", $cats);
+        $escaped = array_map(fn($c) => "'" . $db->real_escape_string($c) . "'", $filteredCats);
         $categoryFilter = " AND category_id IN (" . implode(',', $escaped) . ")";
     }
+} elseif ($admin && $admin['role'] !== 'super_admin') {
+    if (empty($adminCats)) {
+        $categoryFilter = " AND 1=0";
+    } else {
+        $escaped = array_map(fn($c) => "'" . $db->real_escape_string($c) . "'", $adminCats);
+        $categoryFilter = " AND category_id IN (" . implode(',', $escaped) . ")";
+    }
+}
+
+// Optional urgency filter
+$reqUrgency = getParam('urgency');
+$urgencyFilter = '';
+if ($reqUrgency === 'emergency') {
+    $urgencyFilter = " AND urgency = 'emergency'";
+} elseif ($reqUrgency === 'high') {
+    $urgencyFilter = " AND urgency IN ('emergency', 'high')";
+} elseif ($reqUrgency && in_array($reqUrgency, ['medium', 'low'])) {
+    $urgencyFilter = " AND urgency = '" . $db->real_escape_string($reqUrgency) . "'";
 }
 
 // ── All-tables UNION query builder ─────────────────────────────
@@ -126,7 +148,7 @@ switch ($action) {
             "request_id, citizen_name, category_id, category_name, urgency, status, location_address, created_at, latitude, longitude",
             "AND 1=1 $categoryFilter"
         );
-        $r7 = $db->query("SELECT * FROM ($recentUnion) AS t ORDER BY created_at DESC LIMIT 10");
+        $r7 = $db->query("SELECT * FROM ($recentUnion) AS t ORDER BY created_at DESC LIMIT 15");
         $recentIncidents = [];
         if ($r7 && $r7 instanceof mysqli_result) {
             while ($row = $r7->fetch_assoc()) {
@@ -209,7 +231,7 @@ switch ($action) {
     case 'map_markers':
         $mapUnion = buildUnionQuery(
             "request_id, category_id, category_name, urgency, status, latitude, longitude, location_address, created_at",
-            "AND latitude != 0 AND longitude != 0 AND status NOT IN ('resolved','cancelled') $categoryFilter"
+            "AND latitude != 0 AND longitude != 0 AND status NOT IN ('resolved','cancelled') $categoryFilter $urgencyFilter"
         );
         $rm = $db->query("SELECT * FROM ($mapUnion) AS t ORDER BY created_at DESC LIMIT 200");
         $markers = [];
