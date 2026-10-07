@@ -22,16 +22,12 @@ if ($citizensQ && $citizensQ instanceof mysqli_result) {
     }
 }
 
+$showBackButton = true;
 require_once __DIR__ . '/includes/layout.php';
 ?>
 
 <div class="page-header">
     <div>
-        <div class="page-back-wrapper">
-            <a href="javascript:history.back()" onclick="if(window.history.length > 1 && document.referrer && document.referrer.indexOf(window.location.host) !== -1){ window.history.back(); return false; } else { window.location.href='<?= BASE_URL ?>dashboard.php'; return false; }" class="btn-back">
-                <i class="bi bi-arrow-left"></i> Back
-            </a>
-        </div>
         <div class="flex items-center gap-2">
             <h1 class="page-title">
                 <i class="bi bi-person-lines-fill text-info"></i> 
@@ -56,25 +52,43 @@ require_once __DIR__ . '/includes/layout.php';
 </div>
 
 <div class="card mb-6">
-    <div class="filter-bar">
-        <form method="GET" action="" style="display:flex;gap:10px;width:100%;max-width:500px;">
-            <div class="form-group flex-1">
-                <input type="text" name="q" class="form-control" placeholder="Search citizen name, phone, email, zone..." value="<?= htmlspecialchars($search) ?>">
+    <!-- Directory Toolbar -->
+    <div class="citizens-toolbar">
+        <form method="GET" action="" class="citizens-search-form" id="citizenSearchForm">
+            <div class="filter-search-wrap">
+                <i class="bi bi-search filter-search-icon"></i>
+                <input type="text" name="q" id="citizenSearchInput" class="form-control minimal-search-input" 
+                       placeholder="Search citizen name, phone, email, zone..." 
+                       value="<?= htmlspecialchars($search) ?>" 
+                       oninput="filterCitizens(this.value)">
             </div>
-            <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Search</button>
+            <button type="submit" class="btn btn-primary btn-sm">
+                <i class="bi bi-search"></i> Search
+            </button>
             <?php if ($search): ?>
-            <a href="<?= BASE_URL ?>citizens.php" class="btn btn-ghost">Clear</a>
+            <a href="<?= BASE_URL ?>citizens.php" class="btn btn-ghost btn-sm clear-filters-btn" title="Reset server filter">
+                <i class="bi bi-arrow-counterclockwise"></i> Reset
+            </a>
             <?php endif; ?>
         </form>
+
+        <div class="citizens-meta-info">
+            <span class="status-pill active" id="citizenCountBadge" style="cursor:default;">
+                <span class="status-pill-dot" style="background:var(--brand-primary, #6366f1);"></span>
+                <span>Total</span>
+                <span class="status-pill-count" id="visibleCitizenCount"><?= count($citizens) ?></span>
+            </span>
+            <button type="button" class="btn btn-ghost btn-sm clear-filters-btn" id="clientResetBtn" style="display:none;" onclick="resetCitizenSearch()" title="Clear live filter">
+                <i class="bi bi-x-circle"></i> Clear
+            </button>
+        </div>
     </div>
 
     <div class="table-wrapper" style="border:none;border-radius:0;">
-        <table class="table">
+        <table class="table" id="citizensTable">
             <thead>
                 <tr>
-                    <th>User ID</th>
-                    <th>Citizen Name</th>
-                    <th>Email Address</th>
+                    <th>Citizen</th>
                     <th>Phone</th>
                     <th>City / Zone</th>
                     <?php if (!$isSuperAdmin): ?>
@@ -84,11 +98,11 @@ require_once __DIR__ . '/includes/layout.php';
                     <th>Actions</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="citizensTableBody">
                 <?php if (empty($citizens)): ?>
                 <tr>
-                    <td colspan="<?= $isSuperAdmin ? '7' : '8' ?>">
-                        <div class="empty-state">
+                    <td colspan="<?= $isSuperAdmin ? '5' : '6' ?>">
+                        <div class="empty-state" style="padding:48px;">
                             <div class="empty-state-icon"><?= $isSuperAdmin ? '👥' : $agencyProfile['badge'] ?></div>
                             <div class="empty-state-title">
                                 <?= $search 
@@ -104,13 +118,51 @@ require_once __DIR__ . '/includes/layout.php';
                     </td>
                 </tr>
                 <?php else: ?>
-                <?php foreach ($citizens as $c): ?>
-                <tr>
-                    <td><code class="mono">UID-<?= $c['id'] ?></code></td>
-                    <td><strong><?= htmlspecialchars($c['name']) ?></strong></td>
-                    <td><?= htmlspecialchars($c['email']) ?></td>
-                    <td><i class="bi bi-telephone text-muted me-1"></i><?= htmlspecialchars($c['phone']) ?></td>
-                    <td><?= htmlspecialchars($c['city'] ?? 'City Wide') ?> <?= !empty($c['zone']) ? '('.htmlspecialchars($c['zone']).')' : '' ?></td>
+                <tr id="noMatchingCitizensRow" style="display:none;">
+                    <td colspan="<?= $isSuperAdmin ? '5' : '6' ?>">
+                        <div class="empty-state" style="padding:48px;">
+                            <div class="empty-state-icon">🔍</div>
+                            <div class="empty-state-title">No Matching Citizens</div>
+                            <div class="empty-state-sub">No citizens match your live search keyword</div>
+                        </div>
+                    </td>
+                </tr>
+                <?php foreach ($citizens as $c): 
+                    $initial = strtoupper(mb_substr(trim($c['name'] ?? 'U'), 0, 1));
+                    $searchData = strtolower(implode(' ', [
+                        $c['id'],
+                        $c['name'],
+                        $c['email'],
+                        $c['phone'],
+                        $c['city'] ?? '',
+                        $c['zone'] ?? ''
+                    ]));
+                ?>
+                <tr class="citizen-row" data-search="<?= htmlspecialchars($searchData) ?>">
+                    <td>
+                        <div class="citizen-profile-cell">
+                            <div class="citizen-avatar"><?= htmlspecialchars($initial) ?></div>
+                            <div>
+                                <div class="citizen-name"><?= htmlspecialchars($c['name']) ?></div>
+                                <div class="citizen-subtext">
+                                    <span class="mono text-muted">UID-<?= $c['id'] ?></span>
+                                    <span>&bull;</span>
+                                    <span><?= htmlspecialchars($c['email']) ?></span>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <a href="tel:<?= htmlspecialchars($c['phone']) ?>" class="citizen-phone-link">
+                            <i class="bi bi-telephone text-muted me-1"></i><?= htmlspecialchars($c['phone']) ?>
+                        </a>
+                    </td>
+                    <td>
+                        <span><?= htmlspecialchars($c['city'] ?? 'City Wide') ?></span>
+                        <?php if (!empty($c['zone'])): ?>
+                        <span class="text-muted text-xs ms-1">(<?= htmlspecialchars($c['zone']) ?>)</span>
+                        <?php endif; ?>
+                    </td>
                     <?php if (!$isSuperAdmin): ?>
                     <td>
                         <span class="badge badge-primary">
@@ -118,7 +170,9 @@ require_once __DIR__ . '/includes/layout.php';
                         </span>
                     </td>
                     <?php endif; ?>
-                    <td><?= date('M d, Y', strtotime($c['created_at'])) ?></td>
+                    <td class="text-xs text-muted">
+                        <?= date('M d, Y', strtotime($c['created_at'])) ?>
+                    </td>
                     <td>
                         <div class="flex gap-1">
                             <a href="<?= BASE_URL ?>requests.php?search=<?= urlencode($c['phone']) ?>" class="btn btn-surface btn-xs" title="View citizen incident requests">
@@ -136,5 +190,37 @@ require_once __DIR__ . '/includes/layout.php';
         </table>
     </div>
 </div>
+
+<script>
+function filterCitizens(query) {
+    const q = (query || '').toLowerCase().trim();
+    const rows = document.querySelectorAll('#citizensTableBody .citizen-row');
+    const resetBtn = document.getElementById('clientResetBtn');
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+        const text = row.getAttribute('data-search') || '';
+        const match = !q || text.includes(q);
+        row.style.display = match ? '' : 'none';
+        if (match) visibleCount++;
+    });
+
+    const emptyRow = document.getElementById('noMatchingCitizensRow');
+    if (emptyRow) emptyRow.style.display = (visibleCount === 0) ? '' : 'none';
+
+    const countEl = document.getElementById('visibleCitizenCount');
+    if (countEl) countEl.textContent = visibleCount;
+
+    if (resetBtn) {
+        resetBtn.style.display = q ? 'inline-flex' : 'none';
+    }
+}
+
+function resetCitizenSearch() {
+    const input = document.getElementById('citizenSearchInput');
+    if (input) input.value = '';
+    filterCitizens('');
+}
+</script>
 
 <?php require_once __DIR__ . '/includes/layout_end.php'; ?>
