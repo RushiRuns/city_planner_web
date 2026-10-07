@@ -196,10 +196,19 @@ function renderNavItem(array $item, string $activePage, bool $collapsed = false)
 
     <!-- Top Header -->
     <header class="top-header">
-        <!-- Mobile menu button -->
-        <button class="header-action-btn hide-desktop" id="mobileMenuBtn" style="border:none;margin-right:4px;">
-            <i class="bi bi-list"></i>
-        </button>
+        <div class="top-header-left">
+            <!-- Mobile menu button -->
+            <button class="header-action-btn hide-desktop" id="mobileMenuBtn" style="border:none;margin-right:4px;">
+                <i class="bi bi-list"></i>
+            </button>
+            <?php if (!empty($showBackButton) || !empty($headerBackUrl)): ?>
+            <a href="<?= htmlspecialchars($headerBackUrl ?? 'javascript:history.back()') ?>" 
+               onclick="if(window.history.length > 1 && document.referrer && document.referrer.indexOf(window.location.host) !== -1){ window.history.back(); return false; } else { window.location.href='<?= BASE_URL ?>dashboard.php'; return false; }" 
+               class="header-back-link" title="Go back">
+                <i class="bi bi-arrow-left"></i> <span>Back</span>
+            </a>
+            <?php endif; ?>
+        </div>
 
         <!-- Right Actions -->
         <div class="header-actions">

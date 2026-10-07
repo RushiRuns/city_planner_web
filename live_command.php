@@ -6,6 +6,7 @@ require_once __DIR__ . '/includes/session.php';
 require_once __DIR__ . '/includes/rbac.php';
 startSecureSession(); requireLogin(); requirePermission('tracking.view');
 $csrfToken = generateCsrfToken();
+$showBackButton = true;
 $extraScripts = ['map.js'];
 require_once __DIR__ . '/includes/layout.php';
 
@@ -36,9 +37,9 @@ $isSuper = ($admin && $admin['role'] === 'super_admin');
 .command-kpi-bar {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     flex-wrap: wrap;
-    margin-top: 6px;
+    margin-top: 14px;
 }
 .kpi-chip {
     display: inline-flex;
@@ -355,11 +356,6 @@ $isSuper = ($admin && $admin['role'] === 'super_admin');
 
 <div class="page-header mb-4">
     <div>
-        <div class="page-back-wrapper">
-            <a href="javascript:history.back()" onclick="if(window.history.length > 1 && document.referrer && document.referrer.indexOf(window.location.host) !== -1){ window.history.back(); return false; } else { window.location.href='<?= BASE_URL ?>dashboard.php'; return false; }" class="btn-back">
-                <i class="bi bi-arrow-left"></i> Back
-            </a>
-        </div>
         <h1 class="page-title"><i class="bi bi-broadcast-pin" style="color:var(--color-critical);"></i> Live Command Center</h1>
         <div class="command-kpi-bar">
             <span class="kpi-chip kpi-critical"><i class="bi bi-exclamation-triangle-fill"></i> <b id="kpiCritical">0</b> Emergency</span>

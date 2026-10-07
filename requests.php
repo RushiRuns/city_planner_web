@@ -7,22 +7,18 @@ require_once __DIR__ . '/includes/rbac.php';
 startSecureSession(); requireLogin(); requirePermission('requests.view');
 $admin = getSessionAdmin();
 $csrfToken = generateCsrfToken();
+$showBackButton = true;
 $extraScripts = ['requests.js'];
 require_once __DIR__ . '/includes/layout.php';
 ?>
 <!-- ── Page Header ──────────────────────────────────────────── -->
 <div class="page-header">
     <div>
-        <div class="page-back-wrapper">
-            <a href="javascript:history.back()" onclick="if(window.history.length > 1 && document.referrer && document.referrer.indexOf(window.location.host) !== -1){ window.history.back(); return false; } else { window.location.href='<?= BASE_URL ?>dashboard.php'; return false; }" class="btn-back">
-                <i class="bi bi-arrow-left"></i> Back
-            </a>
-        </div>
         <h1 class="page-title"><i class="bi <?= htmlspecialchars($agencyProfile['icon'] ?? 'bi-clipboard2-pulse') ?>" style="opacity:0.6;color:var(--brand-secondary);"></i> <?= htmlspecialchars($agencyProfile['incident_label'] ?? 'Request Operations') ?></h1>
         <p class="page-subtitle">Manage, assign, and resolve service requests</p>
     </div>
     <div class="page-actions">
-        <a href="<?= BASE_URL ?>api/requests_api.php?action=export<?= !empty($_GET['status']) ? '&status='.urlencode($_GET['status']) : '' ?>" class="btn btn-ghost btn-sm">
+        <a href="<?= BASE_URL ?>api/requests_api.php?action=export<?= !empty($_GET['status']) ? '&status='.urlencode($_GET['status']) : '' ?>" class="btn btn-ghost btn-sm" id="exportBtn" onclick="Requests.exportCsv(event)">
             <i class="bi bi-download"></i> Export CSV
         </a>
         <button class="btn btn-ghost btn-sm" id="viewToggle" onclick="Requests.toggleView()">
@@ -31,80 +27,104 @@ require_once __DIR__ . '/includes/layout.php';
     </div>
 </div>
 
-<!-- ── Quick Stats Bar ───────────────────────────────────────── -->
-<div class="grid grid-cols-5 gap-3 mb-6" id="quickStats">
-    <div class="stat-card critical" style="padding:var(--space-4);" onclick="Requests.filterByStatus('submitted')">
-        <div class="stat-icon stat-icon-primary"><i class="bi bi-inbox"></i></div>
-        <div class="stat-content"><div class="stat-value" id="qs-submitted">—</div><div class="stat-label">Submitted</div></div>
-    </div>
-    <div class="stat-card warning" style="padding:var(--space-4);" onclick="Requests.filterByStatus('dispatched')">
-        <div class="stat-icon stat-icon-rescue"><i class="bi bi-send-fill"></i></div>
-        <div class="stat-content"><div class="stat-value" id="qs-dispatched">—</div><div class="stat-label">Dispatched</div></div>
-    </div>
-    <div class="stat-card info" style="padding:var(--space-4);" onclick="Requests.filterByStatus('inProgress')">
-        <div class="stat-icon stat-icon-road"><i class="bi bi-tools"></i></div>
-        <div class="stat-content"><div class="stat-value" id="qs-inprogress">—</div><div class="stat-label">In Progress</div></div>
-    </div>
-    <div class="stat-card success" style="padding:var(--space-4);" onclick="Requests.filterByStatus('resolved')">
-        <div class="stat-icon stat-icon-success"><i class="bi bi-check-circle-fill"></i></div>
-        <div class="stat-content"><div class="stat-value" id="qs-resolved">—</div><div class="stat-label">Resolved</div></div>
-    </div>
-    <div class="stat-card" style="--card-accent:var(--color-neutral);padding:var(--space-4);" onclick="Requests.filterByStatus('cancelled')">
-        <div class="stat-icon stat-icon-neutral"><i class="bi bi-x-circle-fill"></i></div>
-        <div class="stat-content"><div class="stat-value" id="qs-cancelled">—</div><div class="stat-label">Cancelled</div></div>
-    </div>
+<!-- ── Interactive Status Pills Bar ──────────────────────────── -->
+<div class="status-pills-bar mb-4" id="statusPillsBar">
+    <button type="button" class="status-pill <?= empty($_GET['status']) ? 'active' : '' ?>" data-status="" onclick="Requests.filterByStatus('')">
+        <span class="status-pill-dot" style="background:var(--brand-primary, #6366f1);"></span>
+        <span>All</span>
+        <span class="status-pill-count" id="qs-all">—</span>
+    </button>
+    <button type="button" class="status-pill <?= ($_GET['status']??'')==='submitted' ? 'active' : '' ?>" data-status="submitted" onclick="Requests.filterByStatus('submitted')">
+        <span class="status-pill-dot" style="background:var(--color-critical, #ef4444);"></span>
+        <span>Submitted</span>
+        <span class="status-pill-count" id="qs-submitted">—</span>
+    </button>
+    <button type="button" class="status-pill <?= ($_GET['status']??'')==='dispatched' ? 'active' : '' ?>" data-status="dispatched" onclick="Requests.filterByStatus('dispatched')">
+        <span class="status-pill-dot" style="background:var(--color-warning, #f59e0b);"></span>
+        <span>Dispatched</span>
+        <span class="status-pill-count" id="qs-dispatched">—</span>
+    </button>
+    <button type="button" class="status-pill <?= ($_GET['status']??'')==='inProgress' ? 'active' : '' ?>" data-status="inProgress" onclick="Requests.filterByStatus('inProgress')">
+        <span class="status-pill-dot" style="background:var(--color-info, #3b82f6);"></span>
+        <span>In Progress</span>
+        <span class="status-pill-count" id="qs-inprogress">—</span>
+    </button>
+    <button type="button" class="status-pill <?= ($_GET['status']??'')==='resolved' ? 'active' : '' ?>" data-status="resolved" onclick="Requests.filterByStatus('resolved')">
+        <span class="status-pill-dot" style="background:var(--color-success, #10b981);"></span>
+        <span>Resolved</span>
+        <span class="status-pill-count" id="qs-resolved">—</span>
+    </button>
+    <button type="button" class="status-pill <?= ($_GET['status']??'')==='cancelled' ? 'active' : '' ?>" data-status="cancelled" onclick="Requests.filterByStatus('cancelled')">
+        <span class="status-pill-dot" style="background:var(--text-muted, #64748b);"></span>
+        <span>Cancelled</span>
+        <span class="status-pill-count" id="qs-cancelled">—</span>
+    </button>
 </div>
 
 <!-- ── Main Card ─────────────────────────────────────────────── -->
 <div class="card">
-    <!-- Filter Bar -->
-    <div class="filter-bar">
-        <div class="filter-group">
-            <i class="bi bi-search" style="color:var(--text-muted);"></i>
-            <input type="text" id="searchInput" placeholder="Search ID, citizen, location..." class="form-control"
-                   style="max-width:260px;padding:7px 12px;" value="<?= htmlspecialchars($_GET['search'] ?? '') ?>">
+    <!-- Filter Container -->
+    <div class="minimal-filter-container">
+        <!-- Primary Minimal Bar -->
+        <div class="minimal-filter-bar">
+            <div class="filter-search-wrap">
+                <i class="bi bi-search filter-search-icon"></i>
+                <input type="text" id="searchInput" placeholder="Search ID, citizen, location..." class="form-control minimal-search-input" value="<?= htmlspecialchars($_GET['search'] ?? '') ?>">
+            </div>
+
+            <input type="hidden" id="statusFilter" value="<?= htmlspecialchars($_GET['status'] ?? '') ?>">
+
+            <div class="minimal-filter-actions">
+                <button type="button" class="btn btn-surface btn-sm filter-drawer-toggle" id="filterDrawerToggleBtn" onclick="Requests.toggleFilterDrawer()">
+                    <i class="bi bi-funnel"></i>
+                    <span>Filters</span>
+                    <span id="activeFilterBadge" class="filter-count-badge" style="display:none;">0</span>
+                    <i class="bi bi-chevron-down filter-chevron" id="filterChevron"></i>
+                </button>
+                <button type="button" class="btn btn-ghost btn-sm clear-filters-btn" id="clearFiltersBtn" onclick="Requests.clearFilters()" title="Reset all filters">
+                    <i class="bi bi-arrow-counterclockwise"></i> <span>Reset</span>
+                </button>
+            </div>
         </div>
-        <div class="filter-group">
-            <span class="filter-label">Status:</span>
-            <select class="filter-select" id="statusFilter">
-                <option value="">All Status</option>
-                <option value="submitted"   <?= ($_GET['status']??'')==='submitted'?'selected':'' ?>>Submitted</option>
-                <option value="acknowledged"<?= ($_GET['status']??'')==='acknowledged'?'selected':'' ?>>Acknowledged</option>
-                <option value="dispatched"  <?= ($_GET['status']??'')==='dispatched'?'selected':'' ?>>Dispatched</option>
-                <option value="inProgress"  <?= ($_GET['status']??'')==='inProgress'?'selected':'' ?>>In Progress</option>
-                <option value="resolved"    <?= ($_GET['status']??'')==='resolved'?'selected':'' ?>>Resolved</option>
-                <option value="cancelled"   <?= ($_GET['status']??'')==='cancelled'?'selected':'' ?>>Cancelled</option>
-            </select>
+
+        <!-- Collapsible Secondary Filters Drawer (Hidden by default) -->
+        <div class="filter-drawer" id="filterDrawer">
+            <div class="filter-drawer-inner">
+                <div class="filter-drawer-grid">
+                    <div class="filter-field">
+                        <label class="filter-field-label" for="urgencyFilter">Priority</label>
+                        <select class="filter-select" id="urgencyFilter">
+                            <option value="">All Priorities</option>
+                            <option value="emergency">🔴 Emergency</option>
+                            <option value="high">🟠 High</option>
+                            <option value="medium">🟡 Medium</option>
+                            <option value="low">🟢 Low</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-field">
+                        <label class="filter-field-label" for="categoryFilter">Category</label>
+                        <select class="filter-select" id="categoryFilter">
+                            <option value="">All Categories</option>
+                            <?php foreach (CATEGORIES as $id => $cat): ?>
+                            <?php if (isAdminAllowedCategory($id, $admin)): ?>
+                            <option value="<?= htmlspecialchars($id) ?>" <?= ($_GET['category']??'') === $id ? 'selected' : '' ?>><?= htmlspecialchars($cat['name']) ?></option>
+                            <?php endif; ?>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div class="filter-field">
+                        <label class="filter-field-label">Date Range</label>
+                        <div class="filter-date-group">
+                            <input type="date" class="filter-select" id="dateFrom" placeholder="From">
+                            <span class="filter-date-separator">to</span>
+                            <input type="date" class="filter-select" id="dateTo" placeholder="To">
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="filter-group">
-            <span class="filter-label">Priority:</span>
-            <select class="filter-select" id="urgencyFilter">
-                <option value="">All Priority</option>
-                <option value="emergency">🔴 Emergency</option>
-                <option value="high">🟠 High</option>
-                <option value="medium">🟡 Medium</option>
-                <option value="low">🟢 Low</option>
-            </select>
-        </div>
-        <div class="filter-group">
-            <span class="filter-label">Category:</span>
-            <select class="filter-select" id="categoryFilter">
-                <option value="">All Categories</option>
-                <?php foreach (CATEGORIES as $id => $cat): ?>
-                <?php if (isAdminAllowedCategory($id, $admin)): ?>
-                <option value="<?= htmlspecialchars($id) ?>" <?= ($_GET['category']??'') === $id ? 'selected' : '' ?>><?= htmlspecialchars($cat['name']) ?></option>
-                <?php endif; ?>
-                <?php endforeach; ?>
-            </select>
-        </div>
-        <div class="filter-group">
-            <input type="date" class="filter-select" id="dateFrom" placeholder="From" style="min-width:130px;">
-            <span style="color:var(--text-muted);font-size:var(--font-size-xs);">to</span>
-            <input type="date" class="filter-select" id="dateTo" placeholder="To" style="min-width:130px;">
-        </div>
-        <button class="btn btn-ghost btn-sm ms-auto" onclick="Requests.clearFilters()">
-            <i class="bi bi-x-circle"></i> Clear
-        </button>
     </div>
 
     <!-- Table View -->

@@ -1,7 +1,7 @@
-﻿"use strict";
+"use strict";
 const Requests = {
     currentPage: 1, perPage: 20, currentView: "table", sortCol: "created_at", sortDir: "DESC",
-    init() { this.bindFilters(); this.loadStats(); this.load(); },
+    init() { this.bindFilters(); this.updateFilterBadge(); this.loadStats(); this.load(); },
     getFilters() {
         return {
             search: document.getElementById("searchInput")?.value.trim() || "",
@@ -27,10 +27,18 @@ const Requests = {
     async loadStats() {
         try {
             const statuses = ["submitted","dispatched","inProgress","resolved","cancelled"];
+            let grandTotal = 0;
             await Promise.all(statuses.map(async s => {
                 const d = await API.get("requests_api.php", { action: "list", status: s, per_page: 1 });
-                if (d?.pagination) { const el = document.getElementById(`qs-${s.toLowerCase()}`); if (el) el.textContent = d.pagination.total; }
+                if (d?.pagination) {
+                    const count = d.pagination.total || 0;
+                    grandTotal += count;
+                    const el = document.getElementById(`qs-${s.toLowerCase()}`);
+                    if (el) el.textContent = count;
+                }
             }));
+            const allEl = document.getElementById("qs-all");
+            if (allEl) allEl.textContent = grandTotal;
         } catch(e) {}
     },
     renderTable(rows, pg) {
@@ -90,23 +98,100 @@ const Requests = {
     },
     goPage(p) { this.currentPage = p; this.load(); },
     bindFilters() {
-        let t; ["searchInput","statusFilter","urgencyFilter","categoryFilter","dateFrom","dateTo"].forEach(id => {
-            document.getElementById(id)?.addEventListener("input", () => { clearTimeout(t); t = setTimeout(() => { this.currentPage=1; this.load(); }, 350); });
+        let t;
+        ["searchInput", "urgencyFilter", "categoryFilter", "dateFrom", "dateTo"].forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const ev = (el.tagName === "SELECT" || el.type === "date") ? "change" : "input";
+            const handler = () => {
+                this.updateFilterBadge();
+                clearTimeout(t);
+                t = setTimeout(() => { this.currentPage = 1; this.load(); }, 350);
+            };
+            el.addEventListener(ev, handler);
+            if (ev === "change") el.addEventListener("input", handler);
         });
         document.querySelectorAll(".sortable").forEach(th => {
             th.addEventListener("click", () => {
                 const col = th.dataset.col;
-                if (this.sortCol===col) this.sortDir = this.sortDir==="ASC"?"DESC":"ASC";
-                else { this.sortCol=col; this.sortDir="DESC"; }
+                if (this.sortCol === col) this.sortDir = this.sortDir === "ASC" ? "DESC" : "ASC";
+                else { this.sortCol = col; this.sortDir = "DESC"; }
                 this.load();
             });
         });
     },
-    clearFilters() {
-        ["searchInput","statusFilter","urgencyFilter","categoryFilter","dateFrom","dateTo"].forEach(id => { const el=document.getElementById(id); if(el) el.value=""; });
-        this.currentPage=1; this.load();
+    toggleFilterDrawer() {
+        const drawer = document.getElementById("filterDrawer");
+        const btn = document.getElementById("filterDrawerToggleBtn");
+        if (!drawer) return;
+        const isOpen = drawer.classList.toggle("open");
+        if (btn) btn.classList.toggle("open", isOpen);
     },
-    filterByStatus(s) { const el=document.getElementById("statusFilter"); if(el){el.value=s;this.currentPage=1;this.load();} },
+    updateFilterBadge() {
+        let count = 0;
+        if (document.getElementById("urgencyFilter")?.value) count++;
+        if (document.getElementById("categoryFilter")?.value) count++;
+        if (document.getElementById("dateFrom")?.value || document.getElementById("dateTo")?.value) count++;
+
+        const badge = document.getElementById("activeFilterBadge");
+        const btn = document.getElementById("filterDrawerToggleBtn");
+        if (badge) {
+            if (count > 0) {
+                badge.textContent = count;
+                badge.style.display = "inline-block";
+            } else {
+                badge.style.display = "none";
+            }
+        }
+        if (btn) {
+            btn.classList.toggle("has-active-filters", count > 0);
+        }
+    },
+    clearFilters() {
+        ["searchInput", "urgencyFilter", "categoryFilter", "dateFrom", "dateTo"].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.value = "";
+        });
+        const statusEl = document.getElementById("statusFilter");
+        if (statusEl) statusEl.value = "";
+
+        // Reset status pills back to All
+        document.querySelectorAll(".status-pill").forEach(pill => {
+            const st = pill.getAttribute("data-status") || "";
+            if (st === "") pill.classList.add("active");
+            else pill.classList.remove("active");
+        });
+
+        this.updateFilterBadge();
+        this.currentPage = 1;
+        this.load();
+    },
+    filterByStatus(s) {
+        const el = document.getElementById("statusFilter");
+        if (el) el.value = s || "";
+
+        // Update active visual pill
+        document.querySelectorAll(".status-pill").forEach(pill => {
+            const pillStatus = pill.getAttribute("data-status") || "";
+            if (pillStatus === (s || "")) {
+                pill.classList.add("active");
+            } else {
+                pill.classList.remove("active");
+            }
+        });
+
+        this.currentPage = 1;
+        this.load();
+    },
+    exportCsv(e) {
+        if (e && e.preventDefault) e.preventDefault();
+        const f = this.getFilters();
+        const params = new URLSearchParams({ action: "export" });
+        ["search", "status", "urgency", "category", "date_from", "date_to"].forEach(k => {
+            if (f[k]) params.append(k, f[k]);
+        });
+        window.location.href = `${window.BASE_URL || ""}api/requests_api.php?${params.toString()}`;
+    },
     toggleView() {
         this.currentView = this.currentView==="table"?"kanban":"table";
         document.getElementById("tableView").style.display = this.currentView==="table"?"block":"none";
