@@ -145,17 +145,13 @@ if ($interactionsQ) {
     }
 }
 
+$showBackButton = true;
 require_once __DIR__ . '/includes/layout.php';
 ?>
 
 <!-- ── Page Header ──────────────────────────────────────────── -->
 <div class="page-header">
     <div>
-        <div class="page-back-wrapper">
-            <a href="javascript:history.back()" onclick="if(window.history.length > 1 && document.referrer && document.referrer.indexOf(window.location.host) !== -1){ window.history.back(); return false; } else { window.location.href='<?= BASE_URL ?>dashboard.php'; return false; }" class="btn-back">
-                <i class="bi bi-arrow-left"></i> Back
-            </a>
-        </div>
         <h1 class="page-title"><i class="bi bi-grid-3x3-gap-fill text-primary"></i> Services & Helplines</h1>
         <p class="page-subtitle">Service catalog and citizen interaction logs</p>
     </div>
@@ -175,43 +171,62 @@ require_once __DIR__ . '/includes/layout.php';
 <div class="alert alert-critical mb-4"><i class="bi bi-exclamation-octagon-fill me-2"></i><?= htmlspecialchars($msgError) ?></div>
 <?php endif; ?>
 
-
-
 <!-- ── Navigation Tabs ──────────────────────────────────────── -->
-<div class="card mb-6">
-    <div style="display:flex;border-bottom:1px solid var(--border-subtle);padding:0 var(--space-4);">
-        <button class="btn btn-ghost <?= $activeTab === 'catalog' ? 'active' : '' ?>" 
-                style="border-radius:0;border-bottom:2px solid <?= $activeTab === 'catalog' ? 'var(--brand-primary)' : 'transparent' ?>;font-weight:700;padding:12px 18px;"
-                onclick="switchTab('catalog')">
-            <i class="bi bi-grid-fill me-1"></i> Master Service Catalog (<?= $totalServices ?>)
-        </button>
-        <button class="btn btn-ghost <?= $activeTab === 'interactions' ? 'active' : '' ?>" 
-                style="border-radius:0;border-bottom:2px solid <?= $activeTab === 'interactions' ? 'var(--brand-primary)' : 'transparent' ?>;font-weight:700;padding:12px 18px;"
-                onclick="switchTab('interactions')">
-            <i class="bi bi-person-lines-fill me-1"></i> Citizen Helpline Interactions (<?= (int)$intStats['total_interactions'] ?>)
-        </button>
-    </div>
+<div class="services-nav-tabs">
+    <button type="button" class="services-nav-tab <?= $activeTab === 'catalog' ? 'active' : '' ?>" id="tabBtnCatalog" onclick="switchTab('catalog')">
+        <i class="bi bi-grid-fill"></i> Master Service Catalog
+        <span class="tab-badge"><?= $totalServices ?></span>
+    </button>
+    <button type="button" class="services-nav-tab <?= $activeTab === 'interactions' ? 'active' : '' ?>" id="tabBtnInteractions" onclick="switchTab('interactions')">
+        <i class="bi bi-person-lines-fill"></i> Citizen Helpline Interactions
+        <span class="tab-badge"><?= (int)$intStats['total_interactions'] ?></span>
+    </button>
+</div>
 
-    <!-- ── TAB 1: MASTER SERVICE CATALOG ────────────────────── -->
-    <div id="tab-catalog" style="display:<?= $activeTab === 'catalog' ? 'block' : 'none' ?>;">
+<!-- ── TAB 1: MASTER SERVICE CATALOG ────────────────────── -->
+<div id="tab-catalog" style="display:<?= $activeTab === 'catalog' ? 'block' : 'none' ?>;">
+    <div class="card">
+        <!-- Catalog Toolbar -->
+        <div class="catalog-toolbar">
+            <div class="status-pills-bar" id="catalogCategoryPills">
+                <button type="button" class="status-pill active" data-cat="" onclick="filterCatalogCategory('')">
+                    <span class="status-pill-dot" style="background:var(--brand-primary, #6366f1);"></span>
+                    <span>All</span>
+                    <span class="status-pill-count"><?= $totalServices ?></span>
+                </button>
+                <button type="button" class="status-pill" data-cat="Emergency" onclick="filterCatalogCategory('Emergency')">
+                    <span class="status-pill-dot" style="background:var(--color-critical, #ef4444);"></span>
+                    <span>Emergency</span>
+                    <span class="status-pill-count"><?= $emergencyCount ?></span>
+                </button>
+                <button type="button" class="status-pill" data-cat="Citizen" onclick="filterCatalogCategory('Citizen')">
+                    <span class="status-pill-dot" style="background:var(--color-success, #10b981);"></span>
+                    <span>Citizen</span>
+                    <span class="status-pill-count"><?= $citizenCount ?></span>
+                </button>
+            </div>
+            <div class="catalog-search-wrap">
+                <i class="bi bi-search filter-search-icon"></i>
+                <input type="text" id="catalogSearchInput" class="form-control minimal-search-input" placeholder="Search service name or key..." oninput="filterCatalogSearch(this.value)">
+            </div>
+        </div>
+
         <div class="table-wrapper" style="border:none;border-radius:0;">
-            <table class="table">
+            <table class="table" id="servicesTable">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Service Key</th>
-                        <th>Service Name</th>
+                        <th>Service</th>
                         <th>Category</th>
                         <th>Registered Stations</th>
                         <th>Dispatch Route</th>
                         <?php if ($canManage): ?><th>Actions</th><?php endif; ?>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="servicesTableBody">
                     <?php if (empty($servicesList)): ?>
-                    <tr>
-                        <td colspan="7">
-                            <div class="empty-state">
+                    <tr id="catalogEmptyRow">
+                        <td colspan="<?= $canManage ? 5 : 4 ?>">
+                            <div class="empty-state" style="padding:48px;">
                                 <div class="empty-state-icon">🛠️</div>
                                 <div class="empty-state-title">No Services Found</div>
                                 <div class="empty-state-sub">Add services to enable departmental routing</div>
@@ -219,26 +234,40 @@ require_once __DIR__ . '/includes/layout.php';
                         </td>
                     </tr>
                     <?php else: ?>
-                    <?php foreach ($servicesList as $srv): ?>
-                    <tr>
-                        <td><code class="mono">#<?= $srv['id'] ?></code></td>
-                        <td>
-                            <div style="display:flex;align-items:center;gap:8px;">
-                                <div style="width:32px;height:32px;border-radius:var(--radius-md);background:<?= $srv['color'] ?>20;color:<?= $srv['color'] ?>;display:flex;align-items:center;justify-content:center;font-size:16px;">
-                                    <i class="bi <?= $srv['icon'] ?>"></i>
-                                </div>
-                                <code class="mono" style="font-weight:700;"><?= htmlspecialchars($srv['service_key']) ?></code>
+                    <tr id="catalogEmptyRow" style="display:none;">
+                        <td colspan="<?= $canManage ? 5 : 4 ?>">
+                            <div class="empty-state" style="padding:48px;">
+                                <div class="empty-state-icon">🔍</div>
+                                <div class="empty-state-title">No Matching Services</div>
+                                <div class="empty-state-sub">Try adjusting your category filter or search keywords</div>
                             </div>
                         </td>
-                        <td><strong><?= htmlspecialchars($srv['service_name']) ?></strong></td>
+                    </tr>
+                    <?php foreach ($servicesList as $srv): ?>
+                    <tr class="service-row" data-category="<?= htmlspecialchars($srv['category']) ?>" data-search="<?= htmlspecialchars(strtolower($srv['service_name'] . ' ' . $srv['service_key'])) ?>">
+                        <td>
+                            <div style="display:flex;align-items:center;gap:12px;">
+                                <div style="width:36px;height:36px;border-radius:var(--radius-md);background:<?= $srv['color'] ?>20;color:<?= $srv['color'] ?>;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;">
+                                    <i class="bi <?= $srv['icon'] ?>"></i>
+                                </div>
+                                <div>
+                                    <div style="font-weight:600;font-size:14px;color:var(--text-primary);"><?= htmlspecialchars($srv['service_name']) ?></div>
+                                    <div style="font-size:11px;color:var(--text-muted);display:flex;align-items:center;gap:6px;margin-top:2px;">
+                                        <span class="mono text-muted">#<?= $srv['id'] ?></span>
+                                        <span>&bull;</span>
+                                        <code class="mono" style="font-size:11px;background:var(--bg-surface-2);padding:1px 5px;border-radius:4px;border:1px solid var(--border-light);"><?= htmlspecialchars($srv['service_key']) ?></code>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
                         <td>
                             <span class="badge badge-<?= $srv['category'] === 'Emergency' ? 'critical' : 'success' ?>">
                                 <?= htmlspecialchars($srv['category']) ?>
                             </span>
                         </td>
                         <td>
-                            <a href="<?= BASE_URL ?>stations.php?service=<?= urlencode($srv['service_key']) ?>" class="badge badge-neutral" style="text-decoration:none;">
-                                <i class="bi bi-geo-alt-fill me-1"></i><?= $srv['station_count'] ?> Stations
+                            <a href="<?= BASE_URL ?>stations.php?service=<?= urlencode($srv['service_key']) ?>" class="badge badge-neutral" style="text-decoration:none;display:inline-flex;align-items:center;gap:4px;">
+                                <i class="bi bi-geo-alt-fill text-muted"></i> <?= $srv['station_count'] ?> Stations
                             </a>
                         </td>
                         <td>
@@ -249,12 +278,12 @@ require_once __DIR__ . '/includes/layout.php';
                         <?php if ($canManage): ?>
                         <td>
                             <div class="flex gap-1">
-                                <button class="btn btn-ghost btn-sm" title="Edit Service"
+                                <button type="button" class="btn btn-ghost btn-sm" title="Edit Service"
                                         onclick="openEditService(<?= htmlspecialchars(json_encode($srv)) ?>)">
                                     <i class="bi bi-pencil-fill"></i>
                                 </button>
                                 <?php if ($isSuperAdmin): ?>
-                                <button class="btn btn-ghost btn-sm text-critical" title="Delete Service"
+                                <button type="button" class="btn btn-ghost btn-sm text-critical" title="Delete Service"
                                         onclick="confirmDeleteService(<?= $srv['id'] ?>, '<?= htmlspecialchars($srv['service_name']) ?>')">
                                     <i class="bi bi-trash-fill"></i>
                                 </button>
@@ -269,48 +298,81 @@ require_once __DIR__ . '/includes/layout.php';
             </table>
         </div>
     </div>
+</div>
 
-    <!-- ── TAB 2: CITIZEN SERVICE HELPLINE INTERACTIONS ─────── -->
-    <div id="tab-interactions" style="display:<?= $activeTab === 'interactions' ? 'block' : 'none' ?>;">
-        <div class="filter-bar p-3" style="border-bottom:1px solid var(--border-subtle);">
-            <form method="GET" action="" style="display:flex;flex-wrap:wrap;gap:10px;width:100%;align-items:center;">
+<!-- ── TAB 2: CITIZEN SERVICE HELPLINE INTERACTIONS ─────── -->
+<div id="tab-interactions" style="display:<?= $activeTab === 'interactions' ? 'block' : 'none' ?>;">
+    <div class="card">
+        <!-- Minimal Filter Container -->
+        <div class="minimal-filter-container">
+            <form method="GET" action="" id="interactionsFilterForm">
                 <input type="hidden" name="tab" value="interactions">
-                <div class="form-group" style="flex:1;min-width:220px;">
-                    <input type="text" name="q" class="form-control" placeholder="Search citizen name, phone, address, description..." value="<?= htmlspecialchars($searchQ) ?>">
+                <div class="minimal-filter-bar">
+                    <div class="filter-search-wrap">
+                        <i class="bi bi-search filter-search-icon"></i>
+                        <input type="text" name="q" class="form-control minimal-search-input" placeholder="Search citizen, phone, address, notes..." value="<?= htmlspecialchars($searchQ) ?>">
+                    </div>
+
+                    <div class="minimal-filter-actions">
+                        <button type="button" class="btn btn-surface btn-sm filter-drawer-toggle <?= ($filterSrv || $filterTyp) ? 'has-active-filters' : '' ?>" id="interactionsFilterBtn" onclick="toggleInteractionsDrawer()">
+                            <i class="bi bi-funnel"></i>
+                            <span>Filters</span>
+                            <span id="interactionsFilterBadge" class="filter-count-badge" style="<?= ($filterSrv || $filterTyp) ? '' : 'display:none;' ?>"><?= (($filterSrv ? 1 : 0) + ($filterTyp ? 1 : 0)) ?></span>
+                            <i class="bi bi-chevron-down filter-chevron"></i>
+                        </button>
+                        <button type="submit" class="btn btn-primary btn-sm">
+                            <i class="bi bi-search"></i> Search
+                        </button>
+                        <?php if ($searchQ || $filterSrv || $filterTyp): ?>
+                        <a href="<?= BASE_URL ?>services.php?tab=interactions" class="btn btn-ghost btn-sm clear-filters-btn" title="Reset all filters">
+                            <i class="bi bi-arrow-counterclockwise"></i> Reset
+                        </a>
+                        <?php endif; ?>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <select name="srv" class="form-control">
-                        <option value="">All Services</option>
-                        <?php foreach ($servicesList as $s): ?>
-                        <option value="<?= $s['service_key'] ?>" <?= $filterSrv === $s['service_key'] ? 'selected' : '' ?>><?= htmlspecialchars($s['service_name']) ?></option>
-                        <?php endforeach; ?>
-                    </select>
+
+                <!-- Collapsible Secondary Filters Drawer -->
+                <div class="filter-drawer <?= ($filterSrv || $filterTyp) ? 'open' : '' ?>" id="interactionsFilterDrawer">
+                    <div class="filter-drawer-inner">
+                        <div class="filter-drawer-grid">
+                            <div class="filter-field">
+                                <label class="filter-field-label">Target Service</label>
+                                <select name="srv" class="filter-select">
+                                    <option value="">All Services</option>
+                                    <?php foreach ($servicesList as $s): ?>
+                                    <option value="<?= $s['service_key'] ?>" <?= $filterSrv === $s['service_key'] ? 'selected' : '' ?>><?= htmlspecialchars($s['service_name']) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+
+                            <div class="filter-field">
+                                <label class="filter-field-label">Interaction Mode</label>
+                                <select name="typ" class="filter-select">
+                                    <option value="">All Interaction Types</option>
+                                    <option value="call" <?= $filterTyp === 'call' ? 'selected' : '' ?>>Helpline Call Made</option>
+                                    <option value="request" <?= $filterTyp === 'request' ? 'selected' : '' ?>>Request Sent</option>
+                                </select>
+                            </div>
+
+                            <div class="filter-field" style="align-self:flex-end;">
+                                <button type="submit" class="btn btn-primary btn-sm">
+                                    <i class="bi bi-funnel-fill"></i> Apply Filter
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <select name="typ" class="form-control">
-                        <option value="">All Interaction Types</option>
-                        <option value="call" <?= $filterTyp === 'call' ? 'selected' : '' ?>>Helpline Call Made</option>
-                        <option value="request" <?= $filterTyp === 'request' ? 'selected' : '' ?>>Request Sent</option>
-                    </select>
-                </div>
-                <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-search"></i> Filter</button>
-                <?php if ($searchQ || $filterSrv || $filterTyp): ?>
-                <a href="<?= BASE_URL ?>services.php?tab=interactions" class="btn btn-ghost btn-sm">Clear</a>
-                <?php endif; ?>
             </form>
         </div>
 
         <div class="table-wrapper" style="border:none;border-radius:0;">
-            <table class="table">
+            <table class="table" id="interactionsTable">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Citizen Details</th>
-                        <th>Service Requested</th>
-                        <th>Interaction Mode</th>
-                        <th>Description / Call Notes</th>
-                        <th>Location & GPS</th>
-                        <th>Photo</th>
+                        <th>Citizen</th>
+                        <th>Service & Mode</th>
+                        <th>Description / Notes</th>
+                        <th>Location & Media</th>
                         <th>Logged At</th>
                         <?php if ($canManage): ?><th>Actions</th><?php endif; ?>
                     </tr>
@@ -318,8 +380,8 @@ require_once __DIR__ . '/includes/layout.php';
                 <tbody>
                     <?php if (empty($interactions)): ?>
                     <tr>
-                        <td colspan="9">
-                            <div class="empty-state">
+                        <td colspan="<?= $canManage ? 6 : 5 ?>">
+                            <div class="empty-state" style="padding:48px;">
                                 <div class="empty-state-icon">📞</div>
                                 <div class="empty-state-title">No Citizen Interactions Logged</div>
                                 <div class="empty-state-sub">Citizen hotline calls and direct service triggers will appear here in real-time</div>
@@ -332,21 +394,18 @@ require_once __DIR__ . '/includes/layout.php';
                         $hasGeo   = !empty($it['latitude']) && !empty($it['longitude']);
                     ?>
                     <tr>
-                        <td><code class="mono">#<?= $it['id'] ?></code></td>
                         <td>
-                            <div style="font-weight:700;"><?= htmlspecialchars($it['citizen_name']) ?></div>
-                            <div class="text-xs">
+                            <div style="font-weight:600;font-size:13px;"><?= htmlspecialchars($it['citizen_name']) ?></div>
+                            <div style="font-size:12px;margin-top:2px;">
                                 <a href="tel:<?= htmlspecialchars($it['contact_number']) ?>" class="text-info" style="text-decoration:none;">
                                     <i class="bi bi-telephone-fill me-1"></i><?= htmlspecialchars($it['contact_number']) ?>
                                 </a>
                             </div>
+                            <div class="mono text-muted" style="font-size:11px;margin-top:2px;">#<?= $it['id'] ?></div>
                         </td>
                         <td>
-                            <span class="badge badge-info"><?= htmlspecialchars($it['service_label'] ?: $it['service_id']) ?></span>
-                            <div class="text-xs text-muted mono"><?= htmlspecialchars($it['service_id']) ?></div>
-                        </td>
-                        <td>
-                            <div style="display:flex;flex-direction:column;gap:3px;">
+                            <span class="badge badge-info" style="margin-bottom:4px;display:inline-block;"><?= htmlspecialchars($it['service_label'] ?: $it['service_id']) ?></span>
+                            <div>
                                 <?php if ($it['is_call_made']): ?>
                                 <span class="badge badge-success" style="font-size:10px;"><i class="bi bi-telephone-outbound-fill me-1"></i> Call Placed</span>
                                 <?php endif; ?>
@@ -355,30 +414,28 @@ require_once __DIR__ . '/includes/layout.php';
                                 <?php endif; ?>
                             </div>
                         </td>
-                        <td style="max-width:240px;">
+                        <td style="max-width:260px;">
                             <div style="font-size:13px;line-height:1.4;" class="line-clamp-2" title="<?= htmlspecialchars($it['description'] ?? '') ?>">
                                 <?= htmlspecialchars($it['description'] ?: 'No notes provided') ?>
                             </div>
                         </td>
-                        <td style="max-width:200px;">
-                            <div class="text-xs mb-1" title="<?= htmlspecialchars($it['location_address'] ?? '') ?>">
+                        <td style="max-width:220px;">
+                            <div class="text-xs mb-2" title="<?= htmlspecialchars($it['location_address'] ?? '') ?>">
                                 <i class="bi bi-geo-alt-fill text-critical me-1"></i><?= htmlspecialchars($it['location_address'] ?: 'Coordinates only') ?>
                             </div>
-                            <?php if ($hasGeo): ?>
-                            <button class="btn btn-ghost btn-xs text-primary" 
-                                    onclick="openMapModal(<?= (float)$it['latitude'] ?>, <?= (float)$it['longitude'] ?>, '<?= htmlspecialchars(addslashes($it['citizen_name'])) ?>', '<?= htmlspecialchars(addslashes($it['location_address'])) ?>')">
-                                <i class="bi bi-pin-map"></i> <?= round($it['latitude'], 4) ?>, <?= round($it['longitude'], 4) ?>
-                            </button>
-                            <?php endif; ?>
-                        </td>
-                        <td>
-                            <?php if ($hasImage): ?>
-                            <button class="btn btn-surface btn-xs" onclick="openPhotoModal('<?= htmlspecialchars($it['image_data']) ?>')">
-                                <i class="bi bi-image"></i> View
-                            </button>
-                            <?php else: ?>
-                            <span class="text-muted text-xs">No media</span>
-                            <?php endif; ?>
+                            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                                <?php if ($hasGeo): ?>
+                                <button type="button" class="btn btn-surface btn-xs" 
+                                        onclick="openMapModal(<?= (float)$it['latitude'] ?>, <?= (float)$it['longitude'] ?>, '<?= htmlspecialchars(addslashes($it['citizen_name'])) ?>', '<?= htmlspecialchars(addslashes($it['location_address'])) ?>')">
+                                    <i class="bi bi-pin-map text-primary"></i> GPS Map
+                                </button>
+                                <?php endif; ?>
+                                <?php if ($hasImage): ?>
+                                <button type="button" class="btn btn-surface btn-xs" onclick="openPhotoModal('<?= htmlspecialchars($it['image_data']) ?>')">
+                                    <i class="bi bi-image text-primary"></i> Photo Evidence
+                                </button>
+                                <?php endif; ?>
+                            </div>
                         </td>
                         <td class="text-xs">
                             <div><?= date('M d, Y', strtotime($it['created_at'])) ?></div>
@@ -386,7 +443,7 @@ require_once __DIR__ . '/includes/layout.php';
                         </td>
                         <?php if ($canManage): ?>
                         <td>
-                            <button class="btn btn-ghost btn-sm text-critical" title="Delete record"
+                            <button type="button" class="btn btn-ghost btn-sm text-critical" title="Delete record"
                                     onclick="confirmDeleteInteraction(<?= $it['id'] ?>)">
                                 <i class="bi bi-trash"></i>
                             </button>
@@ -550,12 +607,57 @@ require_once __DIR__ . '/includes/layout.php';
 let serviceMap = null;
 let serviceMarker = null;
 
+let currentCatalogCategory = '';
+let currentCatalogSearch = '';
+
 function switchTab(tab) {
     document.getElementById('tab-catalog').style.display = (tab === 'catalog') ? 'block' : 'none';
     document.getElementById('tab-interactions').style.display = (tab === 'interactions') ? 'block' : 'none';
+    
+    document.getElementById('tabBtnCatalog')?.classList.toggle('active', tab === 'catalog');
+    document.getElementById('tabBtnInteractions')?.classList.toggle('active', tab === 'interactions');
+
     const url = new URL(window.location);
     url.searchParams.set('tab', tab);
     window.history.replaceState({}, '', url);
+}
+
+function filterCatalogCategory(cat) {
+    currentCatalogCategory = cat;
+    document.querySelectorAll('#catalogCategoryPills .status-pill').forEach(pill => {
+        const pCat = pill.getAttribute('data-cat') || '';
+        pill.classList.toggle('active', pCat === cat);
+    });
+    applyCatalogFilters();
+}
+
+function filterCatalogSearch(query) {
+    currentCatalogSearch = (query || '').toLowerCase().trim();
+    applyCatalogFilters();
+}
+
+function applyCatalogFilters() {
+    const rows = document.querySelectorAll('#servicesTableBody .service-row');
+    let visibleCount = 0;
+    rows.forEach(row => {
+        const rowCat = row.getAttribute('data-category') || '';
+        const rowSearch = row.getAttribute('data-search') || '';
+        const matchCat = !currentCatalogCategory || rowCat === currentCatalogCategory;
+        const matchSearch = !currentCatalogSearch || rowSearch.includes(currentCatalogSearch);
+        const visible = matchCat && matchSearch;
+        row.style.display = visible ? '' : 'none';
+        if (visible) visibleCount++;
+    });
+    const emptyRow = document.getElementById('catalogEmptyRow');
+    if (emptyRow) emptyRow.style.display = (visibleCount === 0) ? '' : 'none';
+}
+
+function toggleInteractionsDrawer() {
+    const drawer = document.getElementById('interactionsFilterDrawer');
+    const btn = document.getElementById('interactionsFilterBtn');
+    if (!drawer) return;
+    const isOpen = drawer.classList.toggle('open');
+    if (btn) btn.classList.toggle('open', isOpen);
 }
 
 function openEditService(srv) {
