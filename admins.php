@@ -31,6 +31,7 @@ if ($stRes) {
 // Fetch all database services
 $dbServices = getDbServices();
 
+$showBackButton = true;
 require_once __DIR__ . '/includes/layout.php';
 ?>
 
@@ -106,75 +107,240 @@ require_once __DIR__ . '/includes/layout.php';
 .audit-log-item:last-child {
     border-bottom: none;
 }
+
+/* ── Minimalist KPI Bar & Chips ────────────────────────────────── */
+.admin-kpi-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+    transition: opacity 0.2s ease, max-height 0.25s ease;
+}
+.admin-kpi-bar.collapsed {
+    display: none;
+}
+.admin-kpi-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 14px;
+    border-radius: var(--radius-full);
+    font-size: 12px;
+    font-weight: 500;
+    border: 1px solid var(--border-subtle);
+    background: var(--bg-surface-1);
+    color: var(--text-secondary);
+}
+.admin-kpi-chip b {
+    color: var(--text-primary);
+    font-weight: 700;
+}
+.admin-kpi-chip .kpi-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+/* ── Minimalist Toolbar & Collapsible Filter Tray ─────────────── */
+.admin-toolbar-primary {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-subtle);
+}
+.admin-search-wrapper {
+    position: relative;
+    flex: 1;
+}
+.admin-search-wrapper i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+}
+.admin-search-input {
+    width: 100%;
+    padding: 8px 12px 8px 36px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-subtle);
+    background: var(--bg-surface-2);
+    color: var(--text-primary);
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.15s ease;
+}
+.admin-search-input:focus {
+    border-color: var(--brand-primary);
+}
+.admin-filter-tray {
+    display: none;
+    padding: 12px 16px;
+    background: var(--bg-surface-2);
+    border-bottom: 1px solid var(--border-subtle);
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+.admin-filter-tray.expanded {
+    display: flex;
+}
+
+/* ── Contextual Dropdown Menu (•••) ──────────────────────────── */
+.admin-action-cell {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    justify-content: flex-end;
+}
+.admin-dropdown-menu {
+    position: absolute;
+    right: 0;
+    top: 100%;
+    margin-top: 6px;
+    background: var(--bg-surface-1);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    min-width: 190px;
+    z-index: 100;
+    padding: 4px;
+    display: none;
+    text-align: left;
+}
+.admin-dropdown-menu.show {
+    display: block;
+}
+.admin-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 12px;
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    width: 100%;
+    text-align: left;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+.admin-dropdown-item:hover {
+    background: var(--bg-surface-2);
+    color: var(--text-primary);
+}
+.admin-dropdown-item.text-critical:hover {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--color-critical);
+}
+.admin-dropdown-divider {
+    height: 1px;
+    background: var(--border-subtle);
+    margin: 4px 0;
+}
+
+/* ── Collapsible Row Detail Drawer ────────────────────────────── */
+.admin-row-drawer td {
+    padding: 0 !important;
+    background: var(--bg-surface-2) !important;
+    border-bottom: 1px solid var(--border-subtle);
+}
+.admin-drawer-content {
+    padding: 14px 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+}
+.admin-drawer-card {
+    background: var(--bg-surface-1);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 12px 14px;
+}
+.admin-drawer-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
 </style>
 
 <!-- ── Page Header ──────────────────────────────────────────── -->
 <div class="page-header">
     <div>
-        <div class="page-back-wrapper">
-            <a href="<?= BASE_URL ?>dashboard.php" class="btn-back">
-                <i class="bi bi-arrow-left"></i> Dashboard
-            </a>
-        </div>
         <h1 class="page-title"><i class="bi bi-shield-lock-fill text-warning"></i> Administrator Management</h1>
         <p class="page-subtitle">Manage administrative accounts, role delegation, and service jurisdictions</p>
     </div>
-    <div class="page-actions">
+    <div class="page-actions" style="display:flex;align-items:center;gap:8px;">
+        <button class="btn btn-ghost btn-sm" id="toggleKpiBtn" onclick="AdminsManager.toggleKpiBar()" title="Toggle metrics bar">
+            <i class="bi bi-bar-chart-line" id="toggleKpiIcon"></i> <span id="toggleKpiText">Stats</span>
+        </button>
         <button class="btn btn-primary btn-sm" onclick="AdminsManager.openCreateModal()">
             <i class="bi bi-person-plus-fill"></i> Create Administrator
         </button>
     </div>
 </div>
 
-<!-- ── KPI Metric Cards ─────────────────────────────────────── -->
-<div class="grid grid-cols-5 gap-4 mb-6" id="adminMetrics">
-    <div class="stat-card" style="--card-accent: var(--brand-secondary);">
-        <div class="stat-card-header">
-            <span class="stat-label">Total Admins</span>
-            <div class="stat-icon stat-icon-primary"><i class="bi bi-people-fill"></i></div>
-        </div>
-        <div class="stat-value" id="kpi-total">—</div>
+<!-- ── Minimalist KPI Metric Chips Bar ──────────────────────── -->
+<div class="admin-kpi-bar" id="adminMetrics">
+    <div class="admin-kpi-chip">
+        <span class="kpi-dot" style="background:var(--brand-primary);"></span>
+        <span>Total Admins:</span>
+        <b id="kpi-total">—</b>
     </div>
-    <div class="stat-card" style="--card-accent: var(--dept-ambulance);">
-        <div class="stat-card-header">
-            <span class="stat-label">Super Admins</span>
-            <div class="stat-icon stat-icon-ambulance"><i class="bi bi-shield-fill-check"></i></div>
-        </div>
-        <div class="stat-value" id="kpi-super">—</div>
+    <div class="admin-kpi-chip">
+        <span class="kpi-dot" style="background:var(--dept-ambulance);"></span>
+        <span>Super Admins:</span>
+        <b id="kpi-super">—</b>
     </div>
-    <div class="stat-card" style="--card-accent: var(--brand-secondary);">
-        <div class="stat-card-header">
-            <span class="stat-label">Service Dispatchers</span>
-            <div class="stat-icon stat-icon-police"><i class="bi bi-building-fill-gear"></i></div>
-        </div>
-        <div class="stat-value" id="kpi-dept">—</div>
+    <div class="admin-kpi-chip">
+        <span class="kpi-dot" style="background:var(--brand-secondary);"></span>
+        <span>Dispatchers:</span>
+        <b id="kpi-dept">—</b>
     </div>
-    <div class="stat-card" style="--card-accent: var(--color-success);">
-        <div class="stat-card-header">
-            <span class="stat-label">Station Admins</span>
-            <div class="stat-icon stat-icon-success"><i class="bi bi-geo-alt-fill"></i></div>
-        </div>
-        <div class="stat-value" id="kpi-station">—</div>
+    <div class="admin-kpi-chip">
+        <span class="kpi-dot" style="background:var(--color-success);"></span>
+        <span>Station Admins:</span>
+        <b id="kpi-station">—</b>
     </div>
-    <div class="stat-card" style="--card-accent: var(--color-warning);">
-        <div class="stat-card-header">
-            <span class="stat-label">Active (24h)</span>
-            <div class="stat-icon stat-icon-warning"><i class="bi bi-broadcast"></i></div>
-        </div>
-        <div class="stat-value" id="kpi-active-today">—</div>
+    <div class="admin-kpi-chip">
+        <span class="kpi-dot" style="background:var(--color-warning);"></span>
+        <span>Active (24h):</span>
+        <b id="kpi-active-today">—</b>
     </div>
 </div>
 
-<!-- ── Filter & Search Toolbar ──────────────────────────────── -->
-<div class="card mb-6">
-    <div class="filter-bar">
-        <div class="filter-group flex-1">
-            <i class="bi bi-search" style="color:var(--text-muted);"></i>
+<!-- ── Minimalist Filter & Search Card ──────────────────────── -->
+<div class="card mb-6" style="overflow:visible;">
+    <!-- Primary Quick Search Toolbar -->
+    <div class="admin-toolbar-primary">
+        <div class="admin-search-wrapper">
+            <i class="bi bi-search"></i>
             <input type="text" id="adminSearchInput" placeholder="Search by name, email, phone, department, or station..." 
-                   class="form-control" style="padding:7px 12px;" onkeyup="AdminsManager.filter()">
+                   class="admin-search-input" onkeyup="AdminsManager.handleSearchKeyup(event)">
         </div>
+        <button class="btn btn-surface btn-sm" id="filterToggleBtn" onclick="AdminsManager.toggleFilterTray()" title="Toggle filters">
+            <i class="bi bi-funnel"></i> Filters
+            <span class="badge badge-primary" id="activeFilterBadge" style="display:none;font-size:10px;padding:1px 6px;margin-left:4px;">0</span>
+        </button>
+        <button class="btn btn-ghost btn-sm" id="clearFiltersBtn" onclick="AdminsManager.resetFilters()" title="Clear all filters">
+            <i class="bi bi-x-circle"></i> Clear
+        </button>
+    </div>
+
+    <!-- Collapsible Advanced Filter Tray -->
+    <div class="admin-filter-tray" id="adminFilterTray">
         <div class="filter-group">
-            <span class="filter-label">Role:</span>
+            <span class="filter-label" style="font-size:12px;font-weight:600;color:var(--text-secondary);">Role:</span>
             <select class="filter-select" id="adminRoleFilter" onchange="AdminsManager.filter()">
                 <option value="">All Roles</option>
                 <option value="super_admin">👑 Super Administrator</option>
@@ -183,7 +349,7 @@ require_once __DIR__ . '/includes/layout.php';
             </select>
         </div>
         <div class="filter-group">
-            <span class="filter-label">Department:</span>
+            <span class="filter-label" style="font-size:12px;font-weight:600;color:var(--text-secondary);">Department:</span>
             <select class="filter-select" id="adminDeptFilter" onchange="AdminsManager.filter()">
                 <option value="">All Departments</option>
                 <option value="Emergency Services">Emergency Services</option>
@@ -195,36 +361,30 @@ require_once __DIR__ . '/includes/layout.php';
             </select>
         </div>
         <div class="filter-group">
-            <span class="filter-label">Status:</span>
+            <span class="filter-label" style="font-size:12px;font-weight:600;color:var(--text-secondary);">Status:</span>
             <select class="filter-select" id="adminStatusFilter" onchange="AdminsManager.filter()">
                 <option value="">All Statuses</option>
                 <option value="1">🟢 Active</option>
                 <option value="0">🔴 Suspended</option>
             </select>
         </div>
-        <button class="btn btn-ghost btn-sm" onclick="AdminsManager.resetFilters()">
-            <i class="bi bi-x-circle"></i> Clear
-        </button>
     </div>
 
     <!-- ── Administrator Directory Table ─────────────────────── -->
-    <div class="table-wrapper" style="border:none;border-radius:0;">
+    <div class="table-wrapper" style="border:none;border-radius:0;overflow:visible;">
         <table class="table" id="adminsTable">
             <thead>
                 <tr>
-                    <th>Administrator</th>
-                    <th>Email Address</th>
+                    <th style="min-width:240px;">Administrator</th>
                     <th>Role</th>
                     <th>Jurisdiction / Categories</th>
-                    <th>Station</th>
                     <th>Status</th>
-                    <th>Activity</th>
-                    <th style="text-align:right;">Actions</th>
+                    <th style="text-align:right;min-width:140px;">Actions</th>
                 </tr>
             </thead>
             <tbody id="adminsTableBody">
                 <tr>
-                    <td colspan="8" style="text-align:center;padding:40px;">
+                    <td colspan="5" style="text-align:center;padding:40px;">
                         <div class="spinner spinner-primary" style="margin:0 auto 12px;"></div>
                         <div class="text-muted">Loading administrator registry...</div>
                     </td>
@@ -562,9 +722,110 @@ const PRESETS = {
 const AdminsManager = {
     allAdmins: [],
     deleteTargetId: null,
+    searchDebounceTimer: null,
+    activeMenuId: null,
+    openDrawerIds: new Set(),
 
     async init() {
+        this.initKpiBar();
+        this.initClickOutsideListener();
         await this.load();
+    },
+
+    initKpiBar() {
+        const saved = localStorage.getItem('admin_kpi_visible');
+        const kpiBar = document.getElementById('adminMetrics');
+        const icon = document.getElementById('toggleKpiIcon');
+        const text = document.getElementById('toggleKpiText');
+        if (saved === 'false' && kpiBar) {
+            kpiBar.classList.add('collapsed');
+            if (icon) icon.className = 'bi bi-bar-chart';
+            if (text) text.textContent = 'Show Stats';
+        } else if (text) {
+            text.textContent = 'Hide Stats';
+        }
+    },
+
+    toggleKpiBar() {
+        const kpiBar = document.getElementById('adminMetrics');
+        const icon = document.getElementById('toggleKpiIcon');
+        const text = document.getElementById('toggleKpiText');
+        if (!kpiBar) return;
+        const isCurrentlyCollapsed = kpiBar.classList.contains('collapsed');
+        if (isCurrentlyCollapsed) {
+            kpiBar.classList.remove('collapsed');
+            localStorage.setItem('admin_kpi_visible', 'true');
+            if (icon) icon.className = 'bi bi-bar-chart-line';
+            if (text) text.textContent = 'Hide Stats';
+        } else {
+            kpiBar.classList.add('collapsed');
+            localStorage.setItem('admin_kpi_visible', 'false');
+            if (icon) icon.className = 'bi bi-bar-chart';
+            if (text) text.textContent = 'Show Stats';
+        }
+    },
+
+    toggleFilterTray() {
+        const tray = document.getElementById('adminFilterTray');
+        const btn = document.getElementById('filterToggleBtn');
+        if (!tray) return;
+        const isOpen = tray.classList.toggle('expanded');
+        if (btn) {
+            if (isOpen) {
+                btn.classList.add('btn-primary');
+                btn.classList.remove('btn-surface');
+            } else {
+                btn.classList.remove('btn-primary');
+                btn.classList.add('btn-surface');
+            }
+        }
+    },
+
+    handleSearchKeyup(e) {
+        clearTimeout(this.searchDebounceTimer);
+        this.searchDebounceTimer = setTimeout(() => {
+            this.filter();
+        }, 180);
+    },
+
+    initClickOutsideListener() {
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.admin-action-cell')) {
+                this.closeAllActionMenus();
+            }
+        });
+    },
+
+    closeAllActionMenus() {
+        document.querySelectorAll('.admin-dropdown-menu.show').forEach(el => el.classList.remove('show'));
+        this.activeMenuId = null;
+    },
+
+    toggleActionMenu(adminId, e) {
+        if (e) e.stopPropagation();
+        const menu = document.getElementById(`action-menu-${adminId}`);
+        if (!menu) return;
+        const isShowing = menu.classList.contains('show');
+        this.closeAllActionMenus();
+        if (!isShowing) {
+            menu.classList.add('show');
+            this.activeMenuId = adminId;
+        }
+    },
+
+    toggleRowDrawer(adminId) {
+        const drawer = document.getElementById(`drawer-row-${adminId}`);
+        const icon = document.getElementById(`drawer-icon-${adminId}`);
+        if (!drawer) return;
+        if (drawer.style.display === 'none' || !drawer.style.display) {
+            drawer.style.display = 'table-row';
+            this.openDrawerIds.add(adminId);
+            if (icon) icon.className = 'bi bi-chevron-up';
+        } else {
+            drawer.style.display = 'none';
+            this.openDrawerIds.delete(adminId);
+            if (icon) icon.className = 'bi bi-chevron-down';
+        }
     },
 
     async load() {
@@ -583,19 +844,25 @@ const AdminsManager = {
     },
 
     renderStats(stats) {
-        document.getElementById('kpi-total').textContent = stats.total_admins || 0;
-        document.getElementById('kpi-super').textContent = stats.super_admins || 0;
-        document.getElementById('kpi-dept').textContent = stats.dept_admins || 0;
-        document.getElementById('kpi-station').textContent = stats.station_admins || 0;
-        document.getElementById('kpi-active-today').textContent = stats.active_today || 0;
+        const elTotal = document.getElementById('kpi-total');
+        const elSuper = document.getElementById('kpi-super');
+        const elDept = document.getElementById('kpi-dept');
+        const elStation = document.getElementById('kpi-station');
+        const elActive = document.getElementById('kpi-active-today');
+        if (elTotal) elTotal.textContent = stats.total_admins || 0;
+        if (elSuper) elSuper.textContent = stats.super_admins || 0;
+        if (elDept) elDept.textContent = stats.dept_admins || 0;
+        if (elStation) elStation.textContent = stats.station_admins || 0;
+        if (elActive) elActive.textContent = stats.active_today || 0;
     },
 
     renderTable(admins) {
         const tbody = document.getElementById('adminsTableBody');
+        this.closeAllActionMenus();
         if (!admins || admins.length === 0) {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="8">
+                    <td colspan="5">
                         <div class="empty-state" style="padding:40px 20px;">
                             <div class="empty-state-icon">🛡️</div>
                             <div class="empty-state-title">No Administrators Found</div>
@@ -630,34 +897,31 @@ const AdminsManager = {
             if (a.role === 'super_admin') {
                 catHtml = '<span class="badge badge-success" style="font-size:10px;"><i class="bi bi-globe me-1"></i> FULL MULTI-AGENCY ACCESS</span>';
             } else if (a.categories_arr && a.categories_arr.length > 0) {
-                const chips = a.categories_arr.slice(0, 3).map(ck => {
+                const chips = a.categories_arr.slice(0, 2).map(ck => {
                     const meta = CATEGORY_MAP[ck] || { name: ck, icon: 'bi-tag', color: '#64748B' };
                     return `<span class="badge badge-neutral" style="font-size:10px;padding:2px 6px;">
                         <i class="bi ${meta.icon}" style="color:${meta.color};"></i> ${meta.name}
                     </span>`;
                 }).join(' ');
-                const extra = a.categories_arr.length > 3 ? `<span class="badge badge-neutral" style="font-size:9px;">+${a.categories_arr.length - 3} more</span>` : '';
+                const extra = a.categories_arr.length > 2 ? `<span class="badge badge-neutral" style="font-size:9px;">+${a.categories_arr.length - 2}</span>` : '';
                 catHtml = `<div style="display:flex;flex-wrap:wrap;gap:3px;align-items:center;">${chips} ${extra}</div>`;
             } else {
                 catHtml = '<span class="text-xs text-muted">None Assigned</span>';
             }
 
             // Station info
-            let stationHtml = '<span class="text-xs text-muted">—</span>';
+            let stationDisplay = 'No station assigned';
             if (a.station_id) {
-                stationHtml = `
-                    <div><span class="badge badge-neutral mono" style="font-size:10px;">${escapeHtml(a.station_id)}</span></div>
-                    <div class="text-xs text-muted" style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
-                        ${escapeHtml(a.station_name || '')}
-                    </div>
-                `;
+                stationDisplay = `${escapeHtml(a.station_id)} ${a.station_name ? '— ' + escapeHtml(a.station_name) : ''}`;
             }
 
             // Last active
-            const lastActiveStr = a.last_login ? formatDate(a.last_login) : 'Never';
+            const lastActiveStr = a.last_login ? formatDate(a.last_login) : 'Never logged in';
+            const isDrawerOpen = this.openDrawerIds.has(a.id);
 
             return `
-                <tr>
+                <tr id="admin-row-${a.id}">
+                    <!-- Combined Administrator + Email Column -->
                     <td>
                         <div style="display:flex;align-items:center;gap:10px;">
                             <div class="admin-avatar" style="background:${gradient};">${initials}</div>
@@ -666,23 +930,28 @@ const AdminsManager = {
                                     ${escapeHtml(a.name)}
                                     ${isMe ? '<span class="badge badge-primary" style="font-size:9px;padding:1px 5px;">YOU</span>' : ''}
                                 </div>
-                                <div class="text-xs text-muted"><i class="bi bi-telephone me-1"></i>${escapeHtml(a.phone || 'No phone')}</div>
+                                <div style="font-size:12px;color:var(--text-secondary);font-family:monospace;margin-top:2px;">
+                                    ${escapeHtml(a.email)}
+                                </div>
+                                <div class="text-xs text-muted" style="margin-top:1px;">
+                                    <i class="bi bi-telephone me-1"></i>${escapeHtml(a.phone || 'No phone')}
+                                </div>
                             </div>
                         </div>
                     </td>
-                    <td>
-                        <code class="mono" style="font-size:12px;">${escapeHtml(a.email)}</code>
-                    </td>
+
+                    <!-- Role Column -->
                     <td>
                         <span class="badge ${roleBadgeClass}" style="font-size:11px;">${roleLabel}</span>
                     </td>
+
+                    <!-- Jurisdiction / Department Column -->
                     <td>
                         <div style="font-weight:600;font-size:12px;margin-bottom:3px;color:var(--text-secondary);">${escapeHtml(a.department || 'Central Operations')}</div>
                         ${catHtml}
                     </td>
-                    <td>
-                        ${stationHtml}
-                    </td>
+
+                    <!-- Status Column -->
                     <td>
                         <button class="badge badge-${a.is_active == 1 ? 'success' : 'critical'}" 
                                 style="cursor:${isMe ? 'default' : 'pointer'};border:none;"
@@ -692,26 +961,60 @@ const AdminsManager = {
                             ${a.is_active == 1 ? 'Active' : 'Suspended'}
                         </button>
                     </td>
-                    <td>
-                        <div style="font-size:12px;font-weight:600;">${lastActiveStr}</div>
-                        <div class="text-xs text-muted">${a.login_count || 0} logins</div>
-                    </td>
+
+                    <!-- Actions Column: Edit, Drawer Toggle, Context Menu (•••) -->
                     <td style="text-align:right;">
-                        <div style="display:inline-flex;gap:4px;">
+                        <div class="admin-action-cell">
                             <button class="btn btn-surface btn-xs" onclick="AdminsManager.openEditModal(${a.id})" title="Edit Administrator">
-                                <i class="bi bi-pencil-fill"></i>
+                                <i class="bi bi-pencil-fill"></i> Edit
                             </button>
-                            <button class="btn btn-surface btn-xs" onclick="AdminsManager.openResetPasswordModal(${a.id}, '${escapeHtml(a.name)}', '${escapeHtml(a.email)}')" title="Reset Password">
-                                <i class="bi bi-key-fill"></i>
+                            <button class="btn btn-ghost btn-xs" onclick="AdminsManager.toggleRowDrawer(${a.id})" title="View Details">
+                                <i class="bi ${isDrawerOpen ? 'bi-chevron-up' : 'bi-chevron-down'}" id="drawer-icon-${a.id}"></i>
                             </button>
-                            <button class="btn btn-surface btn-xs" onclick="AdminsManager.openAuditTrail(${a.id}, '${escapeHtml(a.name)}', '${escapeHtml(a.email)}', '${roleLabel}')" title="Audit Trail">
-                                <i class="bi bi-journal-text"></i>
+                            <button class="btn btn-ghost btn-xs" onclick="AdminsManager.toggleActionMenu(${a.id}, event)" title="More options">
+                                <i class="bi bi-three-dots"></i>
                             </button>
-                            ${!isMe ? `
-                            <button class="btn btn-ghost btn-xs text-critical" onclick="AdminsManager.openDeleteModal(${a.id}, '${escapeHtml(a.name)}', '${escapeHtml(a.email)}')" title="Delete Account">
-                                <i class="bi bi-trash3-fill"></i>
-                            </button>
-                            ` : ''}
+
+                            <!-- Contextual Dropdown Menu -->
+                            <div class="admin-dropdown-menu" id="action-menu-${a.id}">
+                                <button class="admin-dropdown-item" onclick="AdminsManager.openResetPasswordModal(${a.id}, '${escapeHtml(a.name)}', '${escapeHtml(a.email)}')">
+                                    <i class="bi bi-key-fill text-warning"></i> Reset Password
+                                </button>
+                                <button class="admin-dropdown-item" onclick="AdminsManager.openEditModal(${a.id})">
+                                    <i class="bi bi-shield-check text-primary"></i> Edit Jurisdictions
+                                </button>
+                                <button class="admin-dropdown-item" onclick="AdminsManager.openAuditTrail(${a.id}, '${escapeHtml(a.name)}', '${escapeHtml(a.email)}', '${roleLabel}')">
+                                    <i class="bi bi-journal-text"></i> View Audit Trail
+                                </button>
+                                ${!isMe ? `
+                                <div class="admin-dropdown-divider"></div>
+                                <button class="admin-dropdown-item" onclick="AdminsManager.toggleStatus(${a.id})">
+                                    <i class="bi ${a.is_active == 1 ? 'bi-slash-circle text-warning' : 'bi-check-circle text-success'}"></i> 
+                                    ${a.is_active == 1 ? 'Suspend Account' : 'Activate Account'}
+                                </button>
+                                <button class="admin-dropdown-item text-critical" onclick="AdminsManager.openDeleteModal(${a.id}, '${escapeHtml(a.name)}', '${escapeHtml(a.email)}')">
+                                    <i class="bi bi-trash3-fill"></i> Delete Account
+                                </button>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Collapsible Row Detail Drawer -->
+                <tr id="drawer-row-${a.id}" class="admin-row-drawer" style="display:${isDrawerOpen ? 'table-row' : 'none'};">
+                    <td colspan="5">
+                        <div class="admin-drawer-content">
+                            <div class="admin-drawer-card">
+                                <div class="admin-drawer-title"><i class="bi bi-geo-alt-fill text-primary"></i> Station Assignment</div>
+                                <div style="font-size:13px;font-weight:600;margin-bottom:2px;">${stationDisplay}</div>
+                                <div class="text-xs text-muted">${a.department ? escapeHtml(a.department) : 'No specific division'}</div>
+                            </div>
+                            <div class="admin-drawer-card">
+                                <div class="admin-drawer-title"><i class="bi bi-clock-history text-warning"></i> Login & Activity</div>
+                                <div style="font-size:13px;font-weight:600;margin-bottom:2px;">Last active: ${lastActiveStr}</div>
+                                <div class="text-xs text-muted">Total recorded logins: <b>${a.login_count || 0}</b></div>
+                            </div>
                         </div>
                     </td>
                 </tr>
@@ -720,10 +1023,26 @@ const AdminsManager = {
     },
 
     filter() {
-        const q = (document.getElementById('adminSearchInput').value || '').toLowerCase();
+        const q = (document.getElementById('adminSearchInput').value || '').trim().toLowerCase();
         const role = document.getElementById('adminRoleFilter').value;
         const dept = (document.getElementById('adminDeptFilter').value || '').toLowerCase();
         const status = document.getElementById('adminStatusFilter').value;
+
+        // Calculate active filters count
+        let activeCount = 0;
+        if (role) activeCount++;
+        if (dept) activeCount++;
+        if (status !== '') activeCount++;
+
+        const badge = document.getElementById('activeFilterBadge');
+        if (badge) {
+            if (activeCount > 0) {
+                badge.textContent = activeCount;
+                badge.style.display = 'inline-block';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
 
         const filtered = this.allAdmins.filter(a => {
             if (role && a.role !== role) return false;
@@ -748,6 +1067,18 @@ const AdminsManager = {
         document.getElementById('adminRoleFilter').value = '';
         document.getElementById('adminDeptFilter').value = '';
         document.getElementById('adminStatusFilter').value = '';
+
+        const badge = document.getElementById('activeFilterBadge');
+        if (badge) badge.style.display = 'none';
+
+        const tray = document.getElementById('adminFilterTray');
+        const btn = document.getElementById('filterToggleBtn');
+        if (tray) tray.classList.remove('expanded');
+        if (btn) {
+            btn.classList.remove('btn-primary');
+            btn.classList.add('btn-surface');
+        }
+
         this.renderTable(this.allAdmins);
     },
 
