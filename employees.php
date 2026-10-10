@@ -105,16 +105,180 @@ if ($stQ) {
     }
 }
 
+$showBackButton = true;
 require_once __DIR__ . '/includes/layout.php';
 ?>
 
+<style>
+/* ── Toolbar: Minimalist Search ──────────────────────────────────── */
+.emp-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: var(--space-4);
+    flex-wrap: wrap;
+}
+.emp-search-wrapper {
+    position: relative;
+    flex: 1;
+    max-width: 340px;
+    min-width: 240px;
+}
+.emp-search-wrapper i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    font-size: 13px;
+    pointer-events: none;
+}
+.emp-search-input {
+    width: 100%;
+    padding: 8px 12px 8px 34px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-light);
+    background: var(--bg-surface);
+    color: var(--text-primary);
+    font-size: 13px;
+    outline: none;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+.emp-search-input:focus {
+    border-color: var(--brand-primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+/* ── Minimalist Table & Rows ──────────────────────────────────────── */
+.emp-clickable-row {
+    cursor: pointer;
+    transition: background var(--transition-fast);
+}
+.emp-clickable-row:hover {
+    background: var(--bg-surface-2);
+}
+.emp-officer-cell {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.emp-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-full);
+    background: var(--bg-surface-2);
+    border: 1px solid var(--border-light);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--brand-primary);
+    flex-shrink: 0;
+    text-transform: uppercase;
+}
+.emp-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.emp-name {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 13px;
+}
+
+/* ── Contextual Actions Cell & Dropdown ───────────────────────────── */
+.emp-action-cell {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+}
+.emp-dropdown-menu {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 100%;
+    min-width: 175px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    z-index: 100;
+    padding: 4px;
+    margin-top: 4px;
+}
+.emp-dropdown-menu.show {
+    display: block;
+}
+.emp-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-primary);
+    border: none;
+    background: transparent;
+    text-align: left;
+    text-decoration: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background var(--transition-fast), color var(--transition-fast);
+}
+.emp-dropdown-item:hover {
+    background: var(--bg-surface-2);
+    color: var(--brand-primary);
+}
+.emp-dropdown-divider {
+    height: 1px;
+    background: var(--border-light);
+    margin: 4px 0;
+}
+
+/* ── Accordion Drawer Row ─────────────────────────────────────────── */
+.emp-drawer-row {
+    background: var(--bg-surface-2) !important;
+}
+.emp-drawer-cell {
+    padding: 16px 20px !important;
+    border-top: 1px dashed var(--border-light) !important;
+}
+.emp-drawer-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    align-items: center;
+}
+.emp-drawer-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.emp-drawer-label {
+    font-size: 10.5px;
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+}
+.emp-drawer-value {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+</style>
+
 <div class="page-header">
     <div>
-        <div class="page-back-wrapper">
-            <a href="javascript:history.back()" onclick="if(window.history.length > 1 && document.referrer && document.referrer.indexOf(window.location.host) !== -1){ window.history.back(); return false; } else { window.location.href='<?= BASE_URL ?>dashboard.php'; return false; }" class="btn-back">
-                <i class="bi bi-arrow-left"></i> Back
-            </a>
-        </div>
         <h1 class="page-title"><i class="bi bi-people-fill text-primary"></i> Employees & Personnel</h1>
         <p class="page-subtitle">Field officers, responders, and crew management</p>
     </div>
@@ -134,24 +298,34 @@ require_once __DIR__ . '/includes/layout.php';
 <div class="alert alert-critical mb-4"><?= htmlspecialchars($errorMsg) ?></div>
 <?php endif; ?>
 
+<!-- Minimalist Toolbar: Search & Counters -->
+<div class="emp-toolbar">
+    <div class="emp-search-wrapper">
+        <i class="bi bi-search"></i>
+        <input type="text" id="empSearchInput" class="emp-search-input" 
+               placeholder="Search personnel, role, or station..." 
+               onkeyup="EmployeesManager.handleSearchKeyup(event)">
+    </div>
+    <div class="text-xs text-muted" id="empCountLabel">
+        Showing <?= count($employees) ?> personnel
+    </div>
+</div>
+
 <div class="card">
     <div class="table-wrapper" style="border:none;border-radius:0;">
         <table class="table">
             <thead>
                 <tr>
-                    <th>Emp ID</th>
-                    <th>Officer Name</th>
-                    <th>Designation / Role</th>
+                    <th>Unit / Officer</th>
                     <th>Assigned Station</th>
-                    <th>Contact Phone</th>
                     <th>Status</th>
-                    <th>Actions</th>
+                    <th style="text-align:right;">Actions</th>
                 </tr>
             </thead>
             <tbody>
                 <?php if (empty($employees)): ?>
                 <tr>
-                    <td colspan="7">
+                    <td colspan="4">
                         <div class="empty-state">
                             <div class="empty-state-icon">👷</div>
                             <div class="empty-state-title">No Personnel Found</div>
@@ -159,25 +333,117 @@ require_once __DIR__ . '/includes/layout.php';
                     </td>
                 </tr>
                 <?php else: ?>
-                <?php foreach ($employees as $emp): ?>
-                <tr>
-                    <td><code class="mono">#<?= $emp['id'] ?></code></td>
-                    <td><strong><?= htmlspecialchars($emp['name']) ?></strong></td>
-                    <td><span class="badge badge-info"><?= htmlspecialchars($emp['role']) ?></span></td>
+                <?php foreach ($employees as $emp): 
+                    $initial = mb_substr(trim($emp['name']), 0, 1) ?: 'U';
+                    $status = $emp['status'] ?? 'available';
+                    $statusClass = $status === 'available' ? 'success' : 'warning';
+                ?>
+                <tr class="emp-clickable-row" id="emp-row-<?= $emp['id'] ?>" 
+                    data-search="<?= htmlspecialchars(strtolower($emp['name'] . ' ' . $emp['role'] . ' ' . ($emp['station_name'] ?? '') . ' ' . ($emp['service_label'] ?? ''))) ?>"
+                    onclick="EmployeesManager.toggleRowDrawer(<?= $emp['id'] ?>, event)">
                     <td>
-                        <div><?= htmlspecialchars($emp['station_name'] ?? $emp['station_id']) ?></div>
+                        <div class="emp-officer-cell">
+                            <div class="emp-avatar"><?= htmlspecialchars($initial) ?></div>
+                            <div class="emp-info">
+                                <span class="emp-name"><?= htmlspecialchars($emp['name']) ?></span>
+                                <div>
+                                    <span class="badge badge-info" style="font-size:10px;padding:2px 6px;">
+                                        <?= htmlspecialchars($emp['role']) ?>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="font-semibold text-sm"><?= htmlspecialchars($emp['station_name'] ?? $emp['station_id']) ?></div>
                         <div class="text-xs text-muted"><?= htmlspecialchars($emp['service_label'] ?? '') ?></div>
                     </td>
-                    <td><i class="bi bi-telephone text-muted me-1"></i><?= htmlspecialchars($emp['contact_number']) ?></td>
                     <td>
-                        <span class="badge badge-<?= ($emp['status'] ?? 'available') === 'available' ? 'success' : 'warning' ?>">
-                            <?= htmlspecialchars($emp['status'] ?? 'available') ?>
+                        <span class="badge badge-<?= $statusClass ?>">
+                            <?= htmlspecialchars(strtoupper($status)) ?>
                         </span>
                     </td>
-                    <td>
-                        <button class="btn btn-surface btn-sm" onclick="openTransferModal(<?= $emp['id'] ?>, '<?= htmlspecialchars(addslashes($emp['name'])) ?>', '<?= htmlspecialchars($emp['station_id']) ?>')">
-                            <i class="bi bi-arrow-left-right"></i> Transfer
-                        </button>
+                    <td style="text-align:right;" onclick="event.stopPropagation()">
+                        <div class="emp-action-cell">
+                            <button type="button" class="btn btn-ghost btn-xs" 
+                                    onclick="EmployeesManager.toggleRowDrawer(<?= $emp['id'] ?>, event)" 
+                                    title="Toggle details" aria-label="Toggle details">
+                                <i class="bi bi-chevron-down" id="drawer-icon-<?= $emp['id'] ?>"></i>
+                            </button>
+                            <button type="button" class="btn btn-ghost btn-xs" 
+                                    onclick="EmployeesManager.toggleActionMenu(<?= $emp['id'] ?>, event)" 
+                                    title="More options" aria-label="More options">
+                                <i class="bi bi-three-dots"></i>
+                            </button>
+
+                            <!-- Dropdown Context Menu -->
+                            <div class="emp-dropdown-menu" id="empMenu-<?= $emp['id'] ?>">
+                                <?php if (hasPermission('employees.manage')): ?>
+                                <button type="button" class="emp-dropdown-item" 
+                                        onclick="EmployeesManager.openTransfer(<?= $emp['id'] ?>, '<?= htmlspecialchars(addslashes($emp['name'])) ?>', '<?= htmlspecialchars($emp['station_id']) ?>')">
+                                    <i class="bi bi-arrow-left-right text-warning"></i> Transfer Unit
+                                </button>
+                                <?php endif; ?>
+                                <?php if (!empty($emp['contact_number'])): ?>
+                                <a href="tel:<?= htmlspecialchars($emp['contact_number']) ?>" class="emp-dropdown-item">
+                                    <i class="bi bi-telephone-fill text-info"></i> Call (<?= htmlspecialchars($emp['contact_number']) ?>)
+                                </a>
+                                <?php endif; ?>
+                                <?php if (!empty($emp['email'])): ?>
+                                <a href="mailto:<?= htmlspecialchars($emp['email']) ?>" class="emp-dropdown-item">
+                                    <i class="bi bi-envelope-fill text-secondary"></i> Send Email
+                                </a>
+                                <?php endif; ?>
+                                <div class="emp-dropdown-divider"></div>
+                                <button type="button" class="emp-dropdown-item" onclick="EmployeesManager.toggleRowDrawer(<?= $emp['id'] ?>, event); EmployeesManager.closeAllMenus();">
+                                    <i class="bi bi-info-circle text-primary"></i> View Full Details
+                                </button>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Expandable Accordion Drawer Row -->
+                <tr class="emp-drawer-row" id="drawer-row-<?= $emp['id'] ?>" style="display:none;">
+                    <td colspan="4" class="emp-drawer-cell">
+                        <div class="emp-drawer-grid">
+                            <div class="emp-drawer-item">
+                                <span class="emp-drawer-label">Employee ID</span>
+                                <div class="emp-drawer-value"><code class="mono">#<?= $emp['id'] ?></code></div>
+                            </div>
+                            <div class="emp-drawer-item">
+                                <span class="emp-drawer-label">Contact Phone</span>
+                                <div class="emp-drawer-value">
+                                    <?php if (!empty($emp['contact_number'])): ?>
+                                    <a href="tel:<?= htmlspecialchars($emp['contact_number']) ?>" class="text-primary" style="text-decoration:none;">
+                                        <i class="bi bi-telephone me-1"></i><?= htmlspecialchars($emp['contact_number']) ?>
+                                    </a>
+                                    <?php else: ?>
+                                    <span class="text-muted">No phone registered</span>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                            <div class="emp-drawer-item">
+                                <span class="emp-drawer-label">Email Address</span>
+                                <div class="emp-drawer-value">
+                                    <?php if (!empty($emp['email'])): ?>
+                                    <a href="mailto:<?= htmlspecialchars($emp['email']) ?>" class="text-primary" style="text-decoration:none;">
+                                        <i class="bi bi-envelope me-1"></i><?= htmlspecialchars($emp['email']) ?>
+                                    </a>
+                                    <?php else: ?>
+                                    <span class="text-muted">No email registered</span>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                            <div class="emp-drawer-item">
+                                <span class="emp-drawer-label">Department / Jurisdiction</span>
+                                <div class="emp-drawer-value">
+                                    <span class="badge badge-surface" style="border:1px solid var(--border-light);">
+                                        <?= htmlspecialchars($emp['service_label'] ?? 'General Municipal') ?>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
                     </td>
                 </tr>
                 <?php endforeach; ?>
@@ -270,6 +536,92 @@ require_once __DIR__ . '/includes/layout.php';
 </div>
 
 <script>
+const EmployeesManager = {
+    toggleRowDrawer(empId, event) {
+        if (event) {
+            // Prevent toggle if the click came from interactive elements inside the action cell (except the chevron button)
+            const target = event.target;
+            if (target.closest('.emp-action-cell') && !target.closest('button[title="Toggle details"]')) {
+                return;
+            }
+        }
+        const drawer = document.getElementById(`drawer-row-${empId}`);
+        const icon = document.getElementById(`drawer-icon-${empId}`);
+        if (!drawer) return;
+        
+        const isClosed = drawer.style.display === 'none' || drawer.style.display === '';
+        drawer.style.display = isClosed ? 'table-row' : 'none';
+        if (icon) {
+            icon.className = isClosed ? 'bi bi-chevron-up' : 'bi bi-chevron-down';
+        }
+    },
+
+    toggleActionMenu(empId, event) {
+        if (event) {
+            event.stopPropagation();
+        }
+        const menu = document.getElementById(`empMenu-${empId}`);
+        if (!menu) return;
+        
+        const isShown = menu.classList.contains('show');
+        this.closeAllMenus();
+        if (!isShown) {
+            menu.classList.add('show');
+        }
+    },
+
+    closeAllMenus() {
+        document.querySelectorAll('.emp-dropdown-menu.show').forEach(m => m.classList.remove('show'));
+    },
+
+    openTransfer(id, name, currentStation) {
+        this.closeAllMenus();
+        openTransferModal(id, name, currentStation);
+    },
+
+    handleSearchKeyup(event) {
+        const query = (event.target.value || '').trim().toLowerCase();
+        const rows = document.querySelectorAll('tr[id^="emp-row-"]');
+        let visibleCount = 0;
+
+        rows.forEach(row => {
+            const empId = row.id.replace('emp-row-', '');
+            const drawerRow = document.getElementById(`drawer-row-${empId}`);
+            const text = row.getAttribute('data-search') || '';
+
+            if (!query || text.includes(query)) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+                if (drawerRow) {
+                    drawerRow.style.display = 'none';
+                    const icon = document.getElementById(`drawer-icon-${empId}`);
+                    if (icon) icon.className = 'bi bi-chevron-down';
+                }
+            }
+        });
+
+        const countLabel = document.getElementById('empCountLabel');
+        if (countLabel) {
+            countLabel.textContent = `Showing ${visibleCount} personnel`;
+        }
+    }
+};
+
+// Global menu dismiss listeners
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('.emp-action-cell')) {
+        EmployeesManager.closeAllMenus();
+    }
+});
+window.addEventListener('scroll', () => EmployeesManager.closeAllMenus(), { passive: true });
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        EmployeesManager.closeAllMenus();
+    }
+});
+
 function openTransferModal(id, name, currentStation) {
     document.getElementById('tr-emp-id').value = id;
     document.getElementById('tr-emp-name').textContent = name;
